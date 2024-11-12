@@ -1,0 +1,11 @@
+{
+  "Author": "XIVV",
+  "Name": "XivVoices",
+  "Punchline": "Voicing every dialogues in FFXIV.",
+  "Description": "A plugin that enhances your gaming experience by adding voice to every NPC dialogue, battle interaction, and more. /xivv",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "xivvoices",
+    "xivv"
+  ]
+}
