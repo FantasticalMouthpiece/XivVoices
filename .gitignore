@@ -338,4 +338,5 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-XivVoices/Engine/Framework.cs
+
+# git update-index --assume-unchanged XivVoices/Engine/Framework.cs
