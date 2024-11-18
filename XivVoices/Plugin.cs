@@ -24,6 +24,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Enums;
 using ICharacter = Dalamud.Game.ClientState.Objects.Types.ICharacter;
 using Dalamud.Interface.Textures;
+using Lumina.Excel.Sheets;
 #endregion
 
 namespace XivVoices {
@@ -254,7 +255,7 @@ namespace XivVoices {
             }
         }
 
-        private void _clientState_CfPop(Lumina.Excel.GeneratedSheets.ContentFinderCondition obj) {
+        private void _clientState_CfPop(Lumina.Excel.Sheets.ContentFinderCondition obj) {
             _recentCFPop = 1;
         }
         #endregion Plugin Initiialization
@@ -462,7 +463,7 @@ namespace XivVoices {
 
                 string stringtype = type.ToString();
                 string correctSender = _addonTalkHandler.CleanSender(sender);
-                string user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.GameData.Name}";
+                string user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                 if (cancel)
                 {
@@ -585,7 +586,7 @@ namespace XivVoices {
         //    return HousingManager.Instance()->IsInside() || HousingManager.Instance()->OutdoorTerritory != null;
         //}
 
-        private void _clientState_Logout() {
+        private void _clientState_Logout(int type, int code) {
         }
 
         private void _clientState_Login() {

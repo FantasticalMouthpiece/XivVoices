@@ -120,7 +120,7 @@ namespace XivVoices {
         public Plugin PluginReference { get; internal set; }
         public event EventHandler OnMoveFailed;
 
-        private void ClientState_Logout() {
+        private void ClientState_Logout(int type, int code) {
         }
 
         private void ClientState_Login() {
@@ -1174,6 +1174,7 @@ namespace XivVoices {
                 if (ImGui.CollapsingHeader("Version 0.3.1.0", ImGuiTreeNodeFlags.DefaultOpen))
                 {
                     ImGui.Bullet(); ImGui.TextWrapped("XivVoices is back in development.");
+                    ImGui.Bullet(); ImGui.TextWrapped("Added support for FFXIV 7.1.");
                 }
 
                 ImGui.Columns(1);

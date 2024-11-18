@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using Dalamud.Game.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using Lumina.Excel.Sheets;
 
 namespace XivVoices.Voice {
     public class AddonTalkHandler : IDisposable {
@@ -138,18 +139,20 @@ namespace XivVoices.Voice {
             await _memoryService.OpenProcess(Process.GetCurrentProcess());
             await _gameDataService.Initialize();
 
-            LipSyncTypes = GenerateLipList().ToList();
+            //LipSyncTypes = GenerateLipList().ToList();
             await _animationService.Initialize();
             await _animationService.Start();
             await _memoryService.Start();
         }
 
+        /*
         private IEnumerable<ActionTimeline> GenerateLipList()
         {
             // Grab "no animation" and all "speak/" animations, which are the only ones valid in this slot
             IEnumerable<ActionTimeline> lips = GameDataService.ActionTimelines.Where(x => x.AnimationId == 0 || (x.Key?.StartsWith("speak/") ?? false));
             return lips;
         }
+        */
 
         private void _clientState_TerritoryChanged(ushort obj) {
             try
@@ -214,7 +217,7 @@ namespace XivVoices.Voice {
                             } else {
                                 _speechBubbleInfo.Add(npcBubbleInformaton);
                                 try {
-                                    //_plugin.webSocketServer.SendMessage($"_blockAudioGeneration:[{_blockAudioGeneration}] bubbleCooldown.ElapsedMilliseconds:[{bubbleCooldown.ElapsedMilliseconds}]");
+
                                     if (!_blockAudioGeneration && bubbleCooldown.ElapsedMilliseconds >= 0 ) {
                                         FFXIVClientStructs.FFXIV.Client.Game.Character.Character* character = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)pActor;
                                         if ((ObjectKind)character->GameObject.ObjectKind == ObjectKind.EventNpc || (ObjectKind)character->GameObject.ObjectKind == ObjectKind.BattleNpc) {
@@ -230,7 +233,8 @@ namespace XivVoices.Voice {
                                             if (npcBubbleInformaton.MessageText.TextValue != _lastText) {
 
                                                 string id = character->BaseId.ToString();
-                                                string skeleton = character->CharacterData.ModelSkeletonId.ToString();
+                                                string skeleton = character->ModelContainer.ModelSkeletonId.ToString();
+                                                
 
                                                 if (_plugin.Config.BubblesEverywhere && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
                                                 {
@@ -340,7 +344,7 @@ namespace XivVoices.Voice {
                                 }
                                 if (_startedNewDialogue) {
                                     var otherData = _clientState.LocalPlayer.OnlineStatus;
-                                    if (otherData.Id != 15) {
+                                    if (otherData.Value.RowId != 15) {
                                         _namesToRemove.Clear();
                                         _currentText = "";
                                         //_plugin.webSocketServer.SendMessage($"----------------> [3] {_state.Speaker}: {_state.Text.TrimStart('.')}");
@@ -433,7 +437,7 @@ namespace XivVoices.Voice {
             return sender;
         }
 
-        public async void TriggerLipSync(ICharacter character, string length)
+        public async void TriggerLipSync(ICharacter character, string length, bool forceAnim = false, ushort anim = 0)
         {
             
             if (Conditions.IsBoundByDuty && !Conditions.IsWatchingCutscene) return;
@@ -488,11 +492,12 @@ namespace XivVoices.Voice {
                         {
                             await Task.Delay(100, token);
 
+                            // 4-Second Lips Movement Animation
                             if(!token.IsCancellationRequested && mouthMovement[6] > 0 && character != null && actorMemory != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = LipSyncTypes[6].Timeline.AnimationId;
+                                animationMemory.LipsOverride = forceAnim? anim : (ushort)631;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), LipSyncTypes[6].Timeline.AnimationId, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)631, "Lipsync");
 
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[6] * 4000, 6);
 #if DEBUG
@@ -516,11 +521,12 @@ namespace XivVoices.Voice {
 
                             }
 
+                            // 2-Second Lips Movement Animation
                             if (!token.IsCancellationRequested && mouthMovement[5] > 0 && character != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = LipSyncTypes[5].Timeline.AnimationId;
+                                animationMemory.LipsOverride = forceAnim ? anim : (ushort)630;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), LipSyncTypes[5].Timeline.AnimationId, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)630, "Lipsync");
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[5] * 2000, 5);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[5] durationMs[{mouthMovement[5] * 2}] delay [{adjustedDelay}]");
@@ -542,11 +548,12 @@ namespace XivVoices.Voice {
 
                             }
 
+                            // 1-Second Lips Movement Animation
                             if (!token.IsCancellationRequested && mouthMovement[4] > 0 && character != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = LipSyncTypes[4].Timeline.AnimationId;
+                                animationMemory.LipsOverride = forceAnim ? anim : (ushort)632;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), LipSyncTypes[2].Timeline.AnimationId, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)632, "Lipsync");
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[4]*1000, 4);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[4] durationMs[{mouthMovement[4]}] delay [{adjustedDelay}]");
@@ -679,7 +686,7 @@ namespace XivVoices.Voice {
                 var actorMemory = new ActorMemory();
                 actorMemory.SetAddress(character.Address);
                 var animationMemory = actorMemory.Animation;
-                animationMemory.LipsOverride = LipSyncTypes[5].Timeline.AnimationId;
+                animationMemory.LipsOverride = 630; // LipSyncTypes[5].Timeline.AnimationId
                 MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
             }
             catch (Exception ex)
@@ -722,7 +729,7 @@ namespace XivVoices.Voice {
                 string correctSender = CleanSender(nameToUse);
                 
                 string genderType = gender ? "Female":"Male";
-                string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.GameData.Name}";
+                string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                 Engine.XivEngine.Instance.Process("Dialogue", correctSender, id.ToString(), skeleton.ToString(), correctedMessage, body.ToString(), genderType, race.ToString(), tribe.ToString(), eyes.ToString(), _clientState.ClientLanguage.ToString(), new Vector3(-99), npcObject as ICharacter, user);
 
@@ -777,7 +784,7 @@ namespace XivVoices.Voice {
 
                 if (lastBattleDialogue != correctedMessage)
                 {
-                    string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.GameData.Name}";
+                    string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                     if(_plugin.Config.BubbleChatEnabled)
                         _plugin.Chat.Print(new XivChatEntry
@@ -841,13 +848,14 @@ namespace XivVoices.Voice {
             ICharacter character = gameObject as ICharacter;
             if (character != null) {
                 id = gameObject.DataId;
-                skeleton = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)character.Address)->CharacterData.ModelSkeletonId;
+                skeleton = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)character.Address)->ModelContainer.ModelSkeletonId;
                 body = character.Customize[(int)CustomizeIndex.ModelType];
                 gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]);
                 race = character.Customize[(int)CustomizeIndex.Race];
                 tribe = character.Customize[(int)CustomizeIndex.Tribe];
                 eyes = character.Customize[(int)CustomizeIndex.EyeShape];
                 //_plugin.Log($"{character.Name.TextValue}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}] ---> area[{_plugin.ClientState.TerritoryType}]");
+                //_plugin.Chat.Print($"{character.Name.TextValue}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}] ---> area[{_plugin.ClientState.TerritoryType}]");
             }
             return (Dalamud.Game.ClientState.Objects.Types.IGameObject)character;
         }
