@@ -4,6 +4,7 @@ using ImGuiNET;
 using System;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Dalamud.Plugin.Services;
 using XivVoices.Engine;
 using System.IO;
@@ -180,7 +181,7 @@ namespace XivVoices {
                         DrawSidebarButton("Audio Settings", audioSettingsHandle, audioSettingsActiveHandle);
                         DrawSidebarButton("Audio Logs", archiveHandle, archiveActiveHandle);
 
-                        /*
+                        // Draw the Discord Button
                         if (ImGui.ImageButton(discordHandle, new Vector2(42, 42)))
                         {
                             Process process = new Process();
@@ -188,7 +189,7 @@ namespace XivVoices {
                             {
                                 // true is the default, but it is important not to set it to false
                                 process.StartInfo.UseShellExecute = true;
-                                process.StartInfo.FileName = "https://discord.com";
+                                process.StartInfo.FileName = "https://discord.gg/jX2vxDRkyq";
                                 process.Start();
                             }
                             catch (Exception e)
@@ -198,7 +199,6 @@ namespace XivVoices {
                         }
                         if (ImGui.IsItemHovered())
                             ImGui.SetTooltip("Join Our Discord Community");
-                        */
 
 
                         if (this.configuration.FrameworkActive) {
@@ -271,6 +271,11 @@ namespace XivVoices {
         private void DrawSidebarButton(string tabName, IntPtr normalHandle, IntPtr activeHandle)
         {
             DrawImageButton(tabName, currentTab == tabName ? activeHandle : normalHandle);
+        }
+
+        private void DrawDiscordButton()
+        {
+            
         }
 
         private static readonly List<string> ValidTextureExtensions = new List<string>(){
@@ -1170,8 +1175,13 @@ namespace XivVoices {
             {
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350);
+                
+                if (ImGui.CollapsingHeader("Version 0.3.1.1", ImGuiTreeNodeFlags.DefaultOpen))
+                {
+                    ImGui.Bullet(); ImGui.TextWrapped("Add button to new Discord server in the sidebar.");
+                }
 
-                if (ImGui.CollapsingHeader("Version 0.3.1.0", ImGuiTreeNodeFlags.DefaultOpen))
+                if (ImGui.CollapsingHeader("Version 0.3.1.0", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet(); ImGui.TextWrapped("XivVoices is back in development.");
                     ImGui.Bullet(); ImGui.TextWrapped("Added support for FFXIV 7.1.");
