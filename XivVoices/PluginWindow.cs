@@ -1168,7 +1168,13 @@ public class PluginWindow : Window
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
 
-            if (ImGui.CollapsingHeader("Version 0.3.1.1", ImGuiTreeNodeFlags.DefaultOpen))
+            if (ImGui.CollapsingHeader("Version 0.3.1.2", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Disable option to save config with indentation to prevent crashing.");
+            }
+
+            if (ImGui.CollapsingHeader("Version 0.3.1.1", ImGuiTreeNodeFlags.None))
             {
                 ImGui.Bullet();
                 ImGui.TextWrapped("Add button to new Discord server in the sidebar.");
