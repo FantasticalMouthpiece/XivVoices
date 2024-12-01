@@ -305,8 +305,8 @@ public class PluginWindow : Window
 
     private void RequestSave()
     {
-        Plugin.PluginLog.Error("RequestSave");
-        this.configuration.Save();
+        // Plugin.PluginLog.Error("RequestSave");
+        // this.configuration.Save();
     }
 
     private void DrawErrors()
