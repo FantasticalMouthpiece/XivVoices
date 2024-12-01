@@ -69,52 +69,50 @@ public class Configuration : IPluginConfiguration
     {
         try
         {
-            if (File.Exists(ConfigPath))
-            {
-                // Read and deserialize the JSON file
-                var jsonString = File.ReadAllText(ConfigPath);
-                var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
+            if (!File.Exists(ConfigPath)) return;
 
-                if (loadedConfig != null)
-                {
-                    // Update the current instance with loaded data
-                    Active = loadedConfig.Active;
-                    Initialized = loadedConfig.Initialized;
-                    WorkingDirectory = loadedConfig.WorkingDirectory;
-                    Reports = loadedConfig.Reports ? loadedConfig.Reports : false;
-                    AnnounceReports = loadedConfig.AnnounceReports ? loadedConfig.AnnounceReports : true;
-                    OnlineRequests = loadedConfig.OnlineRequests ? loadedConfig.OnlineRequests : false;
-                    ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
-                    LipsyncEnabled = loadedConfig.LipsyncEnabled;
-                    SkipEnabled = loadedConfig.SkipEnabled;
-                    SayEnabled = loadedConfig.SayEnabled;
-                    TellEnabled = loadedConfig.TellEnabled;
-                    ShoutEnabled = loadedConfig.ShoutEnabled;
-                    PartyEnabled = loadedConfig.PartyEnabled;
-                    AllianceEnabled = loadedConfig.AllianceEnabled;
-                    FreeCompanyEnabled = loadedConfig.FreeCompanyEnabled;
-                    LinkshellEnabled = loadedConfig.LinkshellEnabled;
-                    BattleDialoguesEnabled = loadedConfig.BattleDialoguesEnabled;
-                    RetainersEnabled = loadedConfig.RetainersEnabled;
-                    BubblesEnabled = loadedConfig.BubblesEnabled;
-                    BubblesEverywhere = loadedConfig.BubblesEverywhere;
-                    BubblesInSafeZones = loadedConfig.BubblesInSafeZones;
-                    BubblesInBattleZones = loadedConfig.BubblesInBattleZones;
-                    BubbleChatEnabled = loadedConfig.BubbleChatEnabled;
-                    Mute = loadedConfig.Mute;
-                    Volume = loadedConfig.Volume;
-                    Speed = loadedConfig.Speed;
-                    AudioEngine = loadedConfig.AudioEngine;
-                    PollyEnabled = loadedConfig.PollyEnabled;
-                    LocalTTSEnabled = loadedConfig.LocalTTSEnabled;
-                    LocalTTSMale = loadedConfig.LocalTTSMale;
-                    LocalTTSFemale = loadedConfig.LocalTTSFemale;
-                    LocalTTSUngendered = loadedConfig.LocalTTSUngendered;
-                    LocalTTSVolume = loadedConfig.LocalTTSVolume;
-                    LocalTTSPlayerSays = loadedConfig.LocalTTSPlayerSays;
-                    IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
-                }
-            }
+            // Read and deserialize the JSON file
+            var jsonString = File.ReadAllText(ConfigPath);
+            var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
+
+            if (loadedConfig == null) return;
+
+            // Update the current instance with loaded data
+            Active = loadedConfig.Active;
+            Initialized = loadedConfig.Initialized;
+            WorkingDirectory = loadedConfig.WorkingDirectory;
+            Reports = loadedConfig.Reports;
+            AnnounceReports = loadedConfig.AnnounceReports;
+            OnlineRequests = loadedConfig.OnlineRequests;
+            ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
+            LipsyncEnabled = loadedConfig.LipsyncEnabled;
+            SkipEnabled = loadedConfig.SkipEnabled;
+            SayEnabled = loadedConfig.SayEnabled;
+            TellEnabled = loadedConfig.TellEnabled;
+            ShoutEnabled = loadedConfig.ShoutEnabled;
+            PartyEnabled = loadedConfig.PartyEnabled;
+            AllianceEnabled = loadedConfig.AllianceEnabled;
+            FreeCompanyEnabled = loadedConfig.FreeCompanyEnabled;
+            LinkshellEnabled = loadedConfig.LinkshellEnabled;
+            BattleDialoguesEnabled = loadedConfig.BattleDialoguesEnabled;
+            RetainersEnabled = loadedConfig.RetainersEnabled;
+            BubblesEnabled = loadedConfig.BubblesEnabled;
+            BubblesEverywhere = loadedConfig.BubblesEverywhere;
+            BubblesInSafeZones = loadedConfig.BubblesInSafeZones;
+            BubblesInBattleZones = loadedConfig.BubblesInBattleZones;
+            BubbleChatEnabled = loadedConfig.BubbleChatEnabled;
+            Mute = loadedConfig.Mute;
+            Volume = loadedConfig.Volume;
+            Speed = loadedConfig.Speed;
+            AudioEngine = loadedConfig.AudioEngine;
+            PollyEnabled = loadedConfig.PollyEnabled;
+            LocalTTSEnabled = loadedConfig.LocalTTSEnabled;
+            LocalTTSMale = loadedConfig.LocalTTSMale;
+            LocalTTSFemale = loadedConfig.LocalTTSFemale;
+            LocalTTSUngendered = loadedConfig.LocalTTSUngendered;
+            LocalTTSVolume = loadedConfig.LocalTTSVolume;
+            LocalTTSPlayerSays = loadedConfig.LocalTTSPlayerSays;
+            IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
         }
         catch (Exception ex)
         {
@@ -130,7 +128,7 @@ public class Configuration : IPluginConfiguration
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
 
             // Serialize the current configuration to JSON
-            var jsonString = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+            var jsonString = JsonSerializer.Serialize(this);
             File.WriteAllText(ConfigPath, jsonString);
         }
         catch (Exception ex)
