@@ -1147,7 +1147,13 @@ public class PluginWindow : Window
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
 
-            if (ImGui.CollapsingHeader("Version 0.3.1.2", ImGuiTreeNodeFlags.DefaultOpen))
+            if (ImGui.CollapsingHeader("Version 0.3.1.3", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Change how the config saves in an attempt to prevent crashing.");
+            }
+
+            if (ImGui.CollapsingHeader("Version 0.3.1.2", ImGuiTreeNodeFlags.None))
             {
                 ImGui.Bullet();
                 ImGui.TextWrapped("Disable option to save config with indentation to prevent crashing.");
