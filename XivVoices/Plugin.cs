@@ -564,7 +564,7 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
-        if (Config.AdvanceTalkEnabled)
+        if (Config.TextAutoAdvanceEnabled)
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 

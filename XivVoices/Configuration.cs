@@ -23,7 +23,7 @@ public class Configuration : IPluginConfiguration
     public bool ReplaceVoicedARRCutscenes { get; set; } = true;
     public bool LipsyncEnabled { get; set; } = true;
     public bool SkipEnabled { get; set; } = true;
-    public bool AdvanceTalkEnabled { get; set; } = true;
+    public bool TextAutoAdvanceEnabled { get; set; }
 
     // Chat Settings
     public bool SayEnabled { get; set; } = true;
@@ -88,7 +88,7 @@ public class Configuration : IPluginConfiguration
             ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
             LipsyncEnabled = loadedConfig.LipsyncEnabled;
             SkipEnabled = loadedConfig.SkipEnabled;
-            AdvanceTalkEnabled = loadedConfig.AdvanceTalkEnabled;
+            TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
             SayEnabled = loadedConfig.SayEnabled;
             TellEnabled = loadedConfig.TellEnabled;
             ShoutEnabled = loadedConfig.ShoutEnabled;

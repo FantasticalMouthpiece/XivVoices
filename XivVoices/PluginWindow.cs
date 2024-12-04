@@ -836,15 +836,17 @@ public class PluginWindow : Window
             ImGui.SameLine();
             ImGui.Text("Dialogue Skip Enabled");
 
-            // AdvanceTalkEnabled
-            var advanceTalkEnabled = this.Configuration.AdvanceTalkEnabled;
-            if (ImGui.Checkbox("##advanceTalkEnabled", ref advanceTalkEnabled))
+            // TextAutoAdvanceEnabled
+            var textAutoAdvanceEnabled = Configuration.TextAutoAdvanceEnabled;
+            if (ImGui.Checkbox("##TextAutoAdvanceEnabled", ref textAutoAdvanceEnabled))
             {
-                Configuration.AdvanceTalkEnabled = advanceTalkEnabled;
+                Configuration.TextAutoAdvanceEnabled = textAutoAdvanceEnabled;
                 needSave = true;
-            };
+            }
+
+            ;
             ImGui.SameLine();
-            ImGui.Text("Advance Talk Addon Enabled");
+            ImGui.Text("Enable Text Auto-Advance");
 
             // END
 
