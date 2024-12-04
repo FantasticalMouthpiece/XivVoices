@@ -1,195 +1,195 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0-windows</TargetFramework>
-		<LangVersion>11.0</LangVersion>
-		<Version>0.3.1.2</Version>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <LangVersion>11.0</LangVersion>
+        <Version>0.3.1.3</Version>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-		<PlatformTarget>x64</PlatformTarget>
-		<AnalysisLevel>5.0</AnalysisLevel>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	</PropertyGroup>
+    <PropertyGroup>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <PlatformTarget>x64</PlatformTarget>
+        <AnalysisLevel>5.0</AnalysisLevel>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Remove="Anamnesis\Data\Equipment.json" />
-	    <None Remove="Anamnesis\Data\Images.json" />
-	    <None Remove="Anamnesis\Data\ItemCategories.json" />
-	    <None Remove="Anamnesis\Data\NpcNames.json" />
-	    <None Remove="Anamnesis\Data\Tips.json" />
-		<None Remove="emote.scd" />
-		<None Remove="Data\ignored.json" />
-		<None Remove="Data\lexicon.json" />
-		<None Remove="Data\nameless.json" />
-		<None Remove="Data\npcData.json" />
-		<None Remove="Data\retainers.json" />
-		<None Remove="Data\voiceNames.json" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="Anamnesis\Data\Equipment.json"/>
+        <None Remove="Anamnesis\Data\Images.json"/>
+        <None Remove="Anamnesis\Data\ItemCategories.json"/>
+        <None Remove="Anamnesis\Data\NpcNames.json"/>
+        <None Remove="Anamnesis\Data\Tips.json"/>
+        <None Remove="emote.scd"/>
+        <None Remove="Data\ignored.json"/>
+        <None Remove="Data\lexicon.json"/>
+        <None Remove="Data\nameless.json"/>
+        <None Remove="Data\npcData.json"/>
+        <None Remove="Data\retainers.json"/>
+        <None Remove="Data\voiceNames.json"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<EmbeddedResource Include="Anamnesis\Data\Equipment.json" />
-	    <EmbeddedResource Include="Anamnesis\Data\Images.json" />
-	    <EmbeddedResource Include="Anamnesis\Data\ItemCategories.json" />
-	    <EmbeddedResource Include="Anamnesis\Data\NpcNames.json" />
-	    <EmbeddedResource Include="Anamnesis\Data\Tips.json" />
-		<EmbeddedResource Include="emote.scd" />
-		<EmbeddedResource Include="Data\ignored.json" />
-		<EmbeddedResource Include="Data\lexicon.json" />
-		<EmbeddedResource Include="Data\nameless.json" />
-		<EmbeddedResource Include="Data\npcData.json" />
-		<EmbeddedResource Include="Data\retainers.json" />
-		<EmbeddedResource Include="Data\voiceNames.json" />
-	</ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Anamnesis\Data\Equipment.json"/>
+        <EmbeddedResource Include="Anamnesis\Data\Images.json"/>
+        <EmbeddedResource Include="Anamnesis\Data\ItemCategories.json"/>
+        <EmbeddedResource Include="Anamnesis\Data\NpcNames.json"/>
+        <EmbeddedResource Include="Anamnesis\Data\Tips.json"/>
+        <EmbeddedResource Include="emote.scd"/>
+        <EmbeddedResource Include="Data\ignored.json"/>
+        <EmbeddedResource Include="Data\lexicon.json"/>
+        <EmbeddedResource Include="Data\nameless.json"/>
+        <EmbeddedResource Include="Data\npcData.json"/>
+        <EmbeddedResource Include="Data\retainers.json"/>
+        <EmbeddedResource Include="Data\voiceNames.json"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Concentus.OggFile" Version="1.0.4" />
-		<PackageReference Include="DalamudPackager" Version="11.0.0" />
-		<PackageReference Include="NAudio" Version="2.2.1" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Concentus.OggFile" Version="1.0.4"/>
+        <PackageReference Include="DalamudPackager" Version="11.0.0"/>
+        <PackageReference Include="NAudio" Version="2.2.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Xabe.FFmpeg" Version="5.2.6"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<!--You may need to adjust these paths yourself. These point to a Dalamud assembly in AppData.-->
-		<Reference Include="Dalamud">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="ImGui.NET">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="ImGuiScene">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Lumina">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Lumina.Excel">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Newtonsoft.Json.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="FFXIVClientStructs">
-			<HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-	</ItemGroup>
+    <ItemGroup>
+        <!--You may need to adjust these paths yourself. These point to a Dalamud assembly in AppData.-->
+        <Reference Include="Dalamud">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ImGui.NET">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ImGuiScene">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Lumina">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Lumina.Excel">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Newtonsoft.Json.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="FFXIVClientStructs">
+            <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Update="XivVoices.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="SoundTouch.dll">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="SoundTouch_x64.dll">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
-	
-	<ItemGroup>
-    <Content Include="..\Data\logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-	<Content Include="..\Data\icon.png">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		<Visible>false</Visible>
-	</Content>
-		<Content Include="..\Data\generalSettings.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\generalSettingsActive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\dialogueSettings.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\dialogueSettingsActive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\audioSettings.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\audioSettingsActive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\archive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\archiveActive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\discord.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\ko-fi.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\changelog.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-		<Content Include="..\Data\changelogActive.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</Content>
-    <Content Include="..\Data\update_1.ogg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="..\Data\update_2.ogg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="..\Data\update_3.ogg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="..\Data\update_4.ogg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="XivVoices.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="SoundTouch.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="SoundTouch_x64.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="..\Data\logo.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\icon.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\generalSettings.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\generalSettingsActive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\dialogueSettings.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\dialogueSettingsActive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\audioSettings.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\audioSettingsActive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\archive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\archiveActive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\discord.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\ko-fi.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\changelog.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\changelogActive.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\update_1.ogg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\update_2.ogg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\update_3.ogg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="..\Data\update_4.ogg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+    </ItemGroup>
 
 
-	<ItemGroup>
-	  <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.64.dll" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.64.dll"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="LocalTTS\" />
-	</ItemGroup>
+    <ItemGroup>
+        <Folder Include="LocalTTS\"/>
+    </ItemGroup>
 
 </Project>

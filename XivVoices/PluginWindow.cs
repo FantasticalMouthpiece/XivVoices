@@ -307,6 +307,7 @@ public class PluginWindow : Window
     {
         Plugin.PluginLog.Info("RequestSave");
         Configuration.Save();
+        needSave = false;
     }
 
     private void DrawErrors()
@@ -575,11 +576,7 @@ public class PluginWindow : Window
         ImGui.Indent(8);
 
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     private void DrawSettings()
@@ -847,13 +844,8 @@ public class PluginWindow : Window
 
         ImGui.Indent(8);
 
-
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     private void AudioSettings()
@@ -1017,13 +1009,8 @@ public class PluginWindow : Window
 
         ImGui.Indent(8);
 
-
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     private void LogsSettings()
@@ -1116,11 +1103,7 @@ public class PluginWindow : Window
         ImGui.Text("Framework Enabled");
 
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     private void Framework_Unknown()
@@ -1152,11 +1135,7 @@ public class PluginWindow : Window
         }
 
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     private void Changelog()
@@ -1299,11 +1278,7 @@ public class PluginWindow : Window
         ImGui.TextWrapped($"Files: {XivEngine.Instance.Database.Framework.Queue.Count}");
 
         // Saving Process
-        if (needSave)
-        {
-            needSave = false;
-            RequestSave();
-        }
+        if (needSave) RequestSave();
     }
 
     public void Dispose()
