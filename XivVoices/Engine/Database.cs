@@ -868,8 +868,7 @@ namespace XivVoices.Engine
 
         public string VoiceDataExists(string voiceName, string speaker, string sentence)
         {
-            string newSpeaker = speaker;
-            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref newSpeaker, sentence);
+            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence);
 
             string actorDirectory   = VoiceFilesPath   + "/" + voiceName;
             string speakerDirectory = actorDirectory   + "/" + speaker;
