@@ -868,25 +868,11 @@ namespace XivVoices.Engine
 
         public string VoiceDataExists(string voiceName, string speaker, string sentence)
         {
-            speaker = Regex.Replace(speaker, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
-            
-            // Create a Path
-            string cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
-            cleanedSentence = RemoveSymbolsAndLowercase(cleanedSentence);
-            string actorDirectory = VoiceFilesPath + "/" + voiceName;
-            string speakerDirectory = actorDirectory + "/" + speaker;
+            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence);
 
-            string filePath = speakerDirectory + "/" + cleanedSentence;
-            int missingFromDirectoryPath = 0;
-            if (DirectoryPath.Length < 13)
-                missingFromDirectoryPath = 13 - DirectoryPath.Length;
-            int maxLength = 200 - ((DirectoryPath + "/" + voiceName + "/" + speaker).Length);
-            maxLength -= missingFromDirectoryPath;
-            if (cleanedSentence.Length > maxLength)
-                cleanedSentence = cleanedSentence.Substring(0, maxLength);
-
-            cleanedSentence = Regex.Replace(cleanedSentence, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
-            filePath = speakerDirectory + "/" + cleanedSentence;
+            string actorDirectory   = VoiceFilesPath   + "/" + voiceName;
+            string speakerDirectory = actorDirectory   + "/" + speaker;
+            string filePath         = speakerDirectory + "/" + cleanedSentence;
 
             // Get Wav from filePath if it exists and return it as AudioClip, if not, return Null
             Plugin.PluginLog.Information($"looking for path [{filePath + ".ogg"}]");
@@ -920,6 +906,27 @@ namespace XivVoices.Engine
             else
                 return null;
         }
+
+        public string CleanedSentenceAndSpeakerForFile(string voiceName, ref string speaker, string sentence)
+        {
+            speaker = Regex.Replace(speaker, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
+            
+            // Create a Path
+            string cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
+            cleanedSentence = RemoveSymbolsAndLowercase(cleanedSentence);
+
+            int missingFromDirectoryPath = 0;
+            if (DirectoryPath.Length < 13)
+                missingFromDirectoryPath = 13 - DirectoryPath.Length;
+            int maxLength = 200 - ((DirectoryPath + "/" + voiceName + "/" + speaker).Length);
+            maxLength -= missingFromDirectoryPath;
+            if (cleanedSentence.Length > maxLength)
+                cleanedSentence = cleanedSentence.Substring(0, maxLength);
+
+            cleanedSentence = Regex.Replace(cleanedSentence, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
+            return cleanedSentence;
+        }
+
         [Serializable]
         public class DialogueData
         {

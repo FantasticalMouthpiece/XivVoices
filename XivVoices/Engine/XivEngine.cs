@@ -1996,18 +1996,26 @@ namespace XivVoices.Engine
                         reportedLines.Dequeue();
 
                     if (Database.Plugin.Config.AnnounceReports) this.Database.Plugin.Print($"Reporting line: \"{xivMessage.Sentence}\"");
+                    /*
                     try
                     {
                         HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url);
                         response.EnsureSuccessStatusCode();
                         string responseBody = await response.Content.ReadAsStringAsync();
                     }
-                    catch (HttpRequestException e)
+                    catch (HttpRequestException e)*/
                     {
-                        Plugin.PluginLog.Error("Report failed, saving it Reports folder to be automatically sent later.");
+                        Plugin.PluginLog.Info("Report failed, saving it to the Reports folder to be automatically sent later.");
                         Directory.CreateDirectory(this.Database.ReportsPath);
-                        string fileName = Path.Combine(this.Database.ReportsPath, $"{xivMessage.Speaker}_{new Random().Next(10000, 99999)}.txt");
-                        await File.WriteAllTextAsync(fileName, url);
+                        string fileName;
+
+                        string speaker = xivMessage.Speaker;
+                        fileName = Database.CleanedSentenceAndSpeakerForFile(string.Empty, ref speaker, xivMessage.Sentence);
+
+                        fileName = Path.Combine(this.Database.ReportsPath, $"{speaker}_{fileName}.txt");
+
+                        if(!Path.Exists(fileName))
+                            await File.WriteAllTextAsync(fileName, url);
                     }
                 }
 

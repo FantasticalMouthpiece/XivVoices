@@ -541,32 +541,33 @@ public class PluginWindow : Window
             };
             ImGui.SameLine();
             ImGui.Text("Download missing lines individually if they exist");
-
+            */
             // Reports Enabled
             ImGui.Dummy(new Vector2(0, 8));
             var reports = this.Configuration.Reports;
             if (ImGui.Checkbox("##reports", ref reports))
             {
-                this.configuration.Reports = reports;
+                Configuration.Reports = reports;
                 needSave = true;
             };
             ImGui.SameLine();
             ImGui.Text("Report Missing Dialogues Automatically");
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.25f, 0.25f, 1.0f));
             ImGui.Text("( English lines only, do not enable for other languages )");
+            ImGui.Text("( Currently lines are only recorded to be missing locally )");
             ImGui.PopStyleColor();
 
             // AnnounceReports
             var announceReports = this.Configuration.AnnounceReports;
             if (ImGui.Checkbox("##announceReports", ref announceReports))
             {
-                this.configuration.AnnounceReports = announceReports;
+                Configuration.AnnounceReports = announceReports;
                 needSave = true;
             };
             ImGui.SameLine();
             ImGui.Text("Announce Reported Lines");
 
-            */
+            
 
             // END
 
