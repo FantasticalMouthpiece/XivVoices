@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text;
@@ -564,8 +565,16 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
-        if (Config.TextAutoAdvanceEnabled)
+        if (Config.TextAutoAdvanceEnabled && !PlayerIsBoundByDuty())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+    }
+
+    private bool PlayerIsBoundByDuty()
+    {
+        return _condition[ConditionFlag.InCombat]
+               || _condition[ConditionFlag.BoundByDuty]
+               || _condition[ConditionFlag.BoundByDuty56]
+               || _condition[ConditionFlag.BoundByDuty95];
     }
 
     private static unsafe void SetKeyValue(VirtualKey virtualKey, KeyStateFlags keyStateFlag)
