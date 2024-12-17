@@ -1158,6 +1158,14 @@ public class PluginWindow : Window
         {
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
+            
+            if (ImGui.CollapsingHeader("Version 0.3.2.0", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Add auto-advance feature.");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Add local reporting for future voice line creation.");
+            }
 
             if (ImGui.CollapsingHeader("Version 0.3.1.3", ImGuiTreeNodeFlags.None))
             {
