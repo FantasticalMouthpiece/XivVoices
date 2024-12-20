@@ -569,6 +569,18 @@ public class Plugin : IDalamudPlugin
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 
+    public void HideTalk()
+    {
+        if (Config.TextAutoHideEnabled)
+            _addonTalkManager.Hide();
+    }
+
+    public void ShowTalk()
+    {
+        if (Config.TextAutoHideEnabled)
+            _addonTalkManager.Show();
+    }
+
     private bool PlayerIsBoundByDuty()
     {
         return _condition[ConditionFlag.InCombat]

@@ -849,6 +849,16 @@ public class PluginWindow : Window
             ImGui.SameLine();
             ImGui.Text("Enable Text Auto-Advance");
 
+            // TextAutoHideEnabled
+            var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
+            if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
+            {
+                Configuration.TextAutoHideEnabled = textAutoHideEnabled;
+                needSave = true;
+            };
+            ImGui.SameLine();
+            ImGui.Text("Enable Text Auto-Hide");
+
             // END
 
             ImGui.Columns(1);
