@@ -11,6 +11,7 @@ namespace XivVoices.Voice {
             var addonTalk = GetAddonTalk();
             return addonTalk == null ? null : TalkUtils.ReadTalkAddon(addonTalk);
         }
+
         public unsafe AddonTalkText? ReadTextBattle() {
             var addonTalk = GetAddonTalkBattle();
             return addonTalk == null ? null : TalkUtils.ReadTalkAddon(addonTalk);
@@ -21,9 +22,22 @@ namespace XivVoices.Voice {
             return addonTalk != null && addonTalk->AtkUnitBase.IsVisible;
         }
 
+        public unsafe bool Hide()
+        {
+            var addonTalk = GetAddonTalk();
+            return addonTalk != null && (addonTalk->AtkUnitBase.IsVisible = false) == false;
+        }
+
+        public unsafe bool Show()
+        {
+            var addonTalk = GetAddonTalk();
+            return addonTalk != null && (addonTalk->AtkUnitBase.IsVisible = true) == true;
+        }
+
         private unsafe AddonTalk* GetAddonTalk() {
             return (AddonTalk*)Address.ToPointer();
         }
+
         private unsafe AddonBattleTalk* GetAddonTalkBattle() {
             return (AddonBattleTalk*)Address.ToPointer();
         }

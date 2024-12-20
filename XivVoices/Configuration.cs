@@ -24,7 +24,7 @@ public class Configuration : IPluginConfiguration
     public bool LipsyncEnabled { get; set; } = true;
     public bool SkipEnabled { get; set; } = true;
     public bool TextAutoAdvanceEnabled { get; set; }
-
+    public bool TextAutoHideEnabled { get; set; } = false;
     // Chat Settings
     public bool SayEnabled { get; set; } = true;
     public bool TellEnabled { get; set; } = true;
@@ -89,6 +89,7 @@ public class Configuration : IPluginConfiguration
             LipsyncEnabled = loadedConfig.LipsyncEnabled;
             SkipEnabled = loadedConfig.SkipEnabled;
             TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
+            TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
             SayEnabled = loadedConfig.SayEnabled;
             TellEnabled = loadedConfig.TellEnabled;
             ShoutEnabled = loadedConfig.ShoutEnabled;

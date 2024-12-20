@@ -727,7 +727,7 @@ namespace XivVoices.Voice {
                 string nameToUse = npcObject != null ? npcObject.Name.ToString() : npcName;
                 string correctedMessage = CleanSentence(message);
                 string correctSender = CleanSender(nameToUse);
-                
+                if (lastNPCDialogue == npcName + correctedMessage) return; //Required for Hide Talk Addon so it doesnt repeat lines
                 string genderType = gender ? "Female":"Male";
                 string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
