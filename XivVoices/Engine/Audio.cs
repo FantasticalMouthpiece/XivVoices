@@ -121,7 +121,8 @@ namespace XivVoices.Engine
                     audioInfo.state = "stopped";
                     Plugin.PluginLog.Information($"PlayAudio ---> stopped");
                     audioInfo.percentage = 1f;
-                    Plugin.ClickTalk();
+                    if (xivMessage.ChatType == "Dialogue")
+                        Plugin.ClickTalk();
                 }
                 catch (Exception ex)
                 {
