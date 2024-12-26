@@ -93,7 +93,8 @@ namespace XivVoices.Engine
                             audioOutput.Play();
                             Plugin.PluginLog.Information($"PlayAudio ---> playing");
                             audioInfo.state = "playing";
-
+                            if (xivMessage.ChatType == "Dialogue")
+                                Plugin.HideTalk();
                             var totalDuration = waveStream.TotalTime.TotalMilliseconds;
                             while (audioOutput.PlaybackState == PlaybackState.Playing)
                             {
@@ -122,7 +123,10 @@ namespace XivVoices.Engine
                     Plugin.PluginLog.Information($"PlayAudio ---> stopped");
                     audioInfo.percentage = 1f;
                     if (xivMessage.ChatType == "Dialogue")
+                    {
+                        Plugin.ShowTalk();
                         Plugin.ClickTalk();
+                    }
                 }
                 catch (Exception ex)
                 {

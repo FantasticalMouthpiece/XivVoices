@@ -569,12 +569,34 @@ public class Plugin : IDalamudPlugin
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 
+    public void HideTalk()
+    {
+        if (!Config.TextAutoHideEnabled) return;
+        if (!PlayerIsWatchingACutscene() && Config.TextAutoHideOnlyInCutscenes) return;
+        
+        _addonTalkManager.Hide();
+
+    }
+
+    public void ShowTalk()
+    {
+        if (Config.TextAutoHideEnabled)
+            _addonTalkManager.Show();
+    }
+
     private bool PlayerIsBoundByDuty()
     {
         return _condition[ConditionFlag.InCombat]
                || _condition[ConditionFlag.BoundByDuty]
                || _condition[ConditionFlag.BoundByDuty56]
                || _condition[ConditionFlag.BoundByDuty95];
+    }
+    
+    private bool PlayerIsWatchingACutscene()
+    {
+        return _condition[ConditionFlag.WatchingCutscene]
+               || _condition[ConditionFlag.WatchingCutscene78]
+               || _condition[ConditionFlag.OccupiedInCutSceneEvent];
     }
 
     private static unsafe void SetKeyValue(VirtualKey virtualKey, KeyStateFlags keyStateFlag)
