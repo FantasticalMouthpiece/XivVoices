@@ -806,6 +806,58 @@ public class PluginWindow : Window
 
 
             ImGui.Unindent(28);
+            
+            // Auto Advance Settings ----------------------------------------------
+
+            ImGui.Dummy(new Vector2(0, 10));
+            ImGui.TextWrapped("Auto-Advance Settings");
+            ImGui.Dummy(new Vector2(0, 10));
+            
+            // TextAutoAdvanceEnabled
+            var textAutoAdvanceEnabled = Configuration.TextAutoAdvanceEnabled;
+            if (ImGui.Checkbox("##TextAutoAdvanceEnabled", ref textAutoAdvanceEnabled))
+            {
+                Configuration.TextAutoAdvanceEnabled = textAutoAdvanceEnabled;
+                needSave = true;
+            }
+
+            ;
+            ImGui.SameLine();
+            ImGui.Text("Enable Text Auto-Advance");
+
+            // TextAutoHideEnabled
+            var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
+            if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
+            {
+                Configuration.TextAutoHideEnabled = textAutoHideEnabled;
+
+                if (!textAutoHideEnabled)
+                {
+                    Configuration.TextAutoHideOnlyInCutscenes = false;
+                }
+                
+                needSave = true;
+            };
+            ImGui.SameLine();
+            ImGui.Text("Enable Text Auto-Hide");
+            
+            var textAutoHideOnlyInCutscenes = Configuration.TextAutoHideOnlyInCutscenes;
+            if (textAutoHideEnabled)
+            {
+                ImGui.Indent(28);
+                
+                if (ImGui.Checkbox("##TextAutoHideOnlyInCutscenes", ref textAutoHideOnlyInCutscenes))
+                {
+                    Configuration.TextAutoHideOnlyInCutscenes = textAutoHideOnlyInCutscenes;
+                    needSave = true;
+                };
+                ImGui.SameLine();
+                ImGui.Text("Only Auto-Hide in Cutscenes");
+                
+                ImGui.Unindent(28);
+            }
+
+            // 
 
             // Other Settings ----------------------------------------------
 
@@ -836,29 +888,6 @@ public class PluginWindow : Window
             ;
             ImGui.SameLine();
             ImGui.Text("Dialogue Skip Enabled");
-
-            // TextAutoAdvanceEnabled
-            var textAutoAdvanceEnabled = Configuration.TextAutoAdvanceEnabled;
-            if (ImGui.Checkbox("##TextAutoAdvanceEnabled", ref textAutoAdvanceEnabled))
-            {
-                Configuration.TextAutoAdvanceEnabled = textAutoAdvanceEnabled;
-                needSave = true;
-            }
-
-            ;
-            ImGui.SameLine();
-            ImGui.Text("Enable Text Auto-Advance");
-
-            // TextAutoHideEnabled
-            var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
-            if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
-            {
-                Configuration.TextAutoHideEnabled = textAutoHideEnabled;
-                needSave = true;
-            };
-            ImGui.SameLine();
-            ImGui.Text("Enable Text Auto-Hide");
-
             // END
 
             ImGui.Columns(1);

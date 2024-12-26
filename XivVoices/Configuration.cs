@@ -25,6 +25,7 @@ public class Configuration : IPluginConfiguration
     public bool SkipEnabled { get; set; } = true;
     public bool TextAutoAdvanceEnabled { get; set; }
     public bool TextAutoHideEnabled { get; set; } = false;
+    public bool TextAutoHideOnlyInCutscenes { get; set; } = false;
     // Chat Settings
     public bool SayEnabled { get; set; } = true;
     public bool TellEnabled { get; set; } = true;

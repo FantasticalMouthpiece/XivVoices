@@ -571,8 +571,11 @@ public class Plugin : IDalamudPlugin
 
     public void HideTalk()
     {
-        if (Config.TextAutoHideEnabled)
-            _addonTalkManager.Hide();
+        if (!Config.TextAutoHideEnabled) return;
+        if (!PlayerIsWatchingACutscene() && Config.TextAutoHideOnlyInCutscenes) return;
+        
+        _addonTalkManager.Hide();
+
     }
 
     public void ShowTalk()
@@ -587,6 +590,13 @@ public class Plugin : IDalamudPlugin
                || _condition[ConditionFlag.BoundByDuty]
                || _condition[ConditionFlag.BoundByDuty56]
                || _condition[ConditionFlag.BoundByDuty95];
+    }
+    
+    private bool PlayerIsWatchingACutscene()
+    {
+        return _condition[ConditionFlag.WatchingCutscene]
+               || _condition[ConditionFlag.WatchingCutscene78]
+               || _condition[ConditionFlag.OccupiedInCutSceneEvent];
     }
 
     private static unsafe void SetKeyValue(VirtualKey virtualKey, KeyStateFlags keyStateFlag)
