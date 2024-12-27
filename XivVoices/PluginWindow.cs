@@ -1197,6 +1197,14 @@ public class PluginWindow : Window
         {
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
+
+            if (ImGui.CollapsingHeader("Version 0.3.2.1", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Add text auto-hide feature.");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Fix issue where auto-advance would select a target in the open world.");
+            }
             
             if (ImGui.CollapsingHeader("Version 0.3.2.0", ImGuiTreeNodeFlags.None))
             {
