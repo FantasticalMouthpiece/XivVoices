@@ -4,8 +4,8 @@
     "Name": "Xiv Voices",
     "Description": "Turning every dialogue into a voiced dialogue!",
     "InternalName": "XivVoices",
-    "AssemblyVersion": "0.3.2.0",
-    "TestingAssemblyVersion": "0.3.2.0",
+    "AssemblyVersion": "0.3.2.1",
+    "TestingAssemblyVersion": "0.3.2.1",
     "RepoUrl": "https://github.com/FantasticalMouthpiece/XivVoices",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 11,
@@ -16,9 +16,9 @@
     "LoadPriority": 69420,
     "LoadRequiredState": 2,
     "LoadSync": true,
-    "DownloadLinkInstall": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.0/XivVoices.zip",
-    "DownloadLinkTesting": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.0/XivVoices.zip",
-    "DownloadLinkUpdate": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.0/XivVoices.zip",
+    "DownloadLinkInstall": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.1/XivVoices.zip",
+    "DownloadLinkTesting": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.1/XivVoices.zip",
+    "DownloadLinkUpdate": "https://github.com/FantasticalMouthpiece/XivVoices/releases/download/0.3.2.1/XivVoices.zip",
     "IconUrl": "https://raw.githubusercontent.com/FantasticalMouthpiece/XivVoices/main/icon.png"
   }
 ]
