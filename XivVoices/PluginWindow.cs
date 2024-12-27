@@ -857,8 +857,6 @@ public class PluginWindow : Window
                 ImGui.Unindent(28);
             }
 
-            // 
-
             // Other Settings ----------------------------------------------
 
             ImGui.Dummy(new Vector2(0, 10));
