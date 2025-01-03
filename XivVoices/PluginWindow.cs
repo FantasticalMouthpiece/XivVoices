@@ -826,36 +826,36 @@ public class PluginWindow : Window
             ImGui.Text("Enable Text Auto-Advance");
 
             // TextAutoHideEnabled
-            var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
-            if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
-            {
-                Configuration.TextAutoHideEnabled = textAutoHideEnabled;
-
-                if (!textAutoHideEnabled)
-                {
-                    Configuration.TextAutoHideOnlyInCutscenes = false;
-                }
-                
-                needSave = true;
-            };
-            ImGui.SameLine();
-            ImGui.Text("Enable Text Auto-Hide");
-            
-            var textAutoHideOnlyInCutscenes = Configuration.TextAutoHideOnlyInCutscenes;
-            if (textAutoHideEnabled)
-            {
-                ImGui.Indent(28);
-                
-                if (ImGui.Checkbox("##TextAutoHideOnlyInCutscenes", ref textAutoHideOnlyInCutscenes))
-                {
-                    Configuration.TextAutoHideOnlyInCutscenes = textAutoHideOnlyInCutscenes;
-                    needSave = true;
-                };
-                ImGui.SameLine();
-                ImGui.Text("Only Auto-Hide in Cutscenes");
-                
-                ImGui.Unindent(28);
-            }
+            // var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
+            // if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
+            // {
+            //     Configuration.TextAutoHideEnabled = textAutoHideEnabled;
+            //
+            //     if (!textAutoHideEnabled)
+            //     {
+            //         Configuration.TextAutoHideOnlyInCutscenes = false;
+            //     }
+            //     
+            //     needSave = true;
+            // };
+            // ImGui.SameLine();
+            // ImGui.Text("Enable Text Auto-Hide");
+            //
+            // var textAutoHideOnlyInCutscenes = Configuration.TextAutoHideOnlyInCutscenes;
+            // if (textAutoHideEnabled)
+            // {
+            //     ImGui.Indent(28);
+            //     
+            //     if (ImGui.Checkbox("##TextAutoHideOnlyInCutscenes", ref textAutoHideOnlyInCutscenes))
+            //     {
+            //         Configuration.TextAutoHideOnlyInCutscenes = textAutoHideOnlyInCutscenes;
+            //         needSave = true;
+            //     };
+            //     ImGui.SameLine();
+            //     ImGui.Text("Only Auto-Hide in Cutscenes");
+            //     
+            //     ImGui.Unindent(28);
+            // }
 
             // 
 
@@ -1197,6 +1197,12 @@ public class PluginWindow : Window
         {
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
+            
+            if (ImGui.CollapsingHeader("Version 0.3.2.2", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Disable text auto-hide feature due to problems with MSQ Roulette.");
+            }
 
             if (ImGui.CollapsingHeader("Version 0.3.2.1", ImGuiTreeNodeFlags.None))
             {

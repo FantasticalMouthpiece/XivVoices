@@ -90,7 +90,13 @@ public class Configuration : IPluginConfiguration
             LipsyncEnabled = loadedConfig.LipsyncEnabled;
             SkipEnabled = loadedConfig.SkipEnabled;
             TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
-            TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
+            // TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
+            // TextAutoHideOnlyInCutscenes = loadedConfig.TextAutoHideOnlyInCutscenes;
+            
+            // Disabled until bug is fixed.
+            TextAutoHideEnabled = false;
+            TextAutoHideOnlyInCutscenes = false;
+            
             SayEnabled = loadedConfig.SayEnabled;
             TellEnabled = loadedConfig.TellEnabled;
             ShoutEnabled = loadedConfig.ShoutEnabled;
