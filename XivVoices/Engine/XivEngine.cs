@@ -1412,7 +1412,7 @@ namespace XivVoices.Engine
             sentence = Regex.Replace(sentence, @"\bARR\b", "A Realm Reborn", options);
             sentence = Regex.Replace(sentence, @"\bHW\b", "Heavensward");
             sentence = Regex.Replace(sentence, @"\bSB\b", "Storm Blood");
-            sentence = Regex.Replace(sentence, @"\bSHB\b", "Shadow Bangers", options);
+            sentence = Regex.Replace(sentence, @"\bSHB\b", "Shadowbringers", options);
             sentence = Regex.Replace(sentence, @"\bEW\b", "End Walker");
             sentence = Regex.Replace(sentence, @"\bucob\b", "ultimate coils of bahamut", options);
             sentence = Regex.Replace(sentence, @"\bIT\b", "it");
@@ -1482,7 +1482,9 @@ namespace XivVoices.Engine
                 { "BLM", "Black Mage" },
                 { "SMN", "Summoner" },
                 { "RDM", "Red Mage" },
-                { "BLU", "Blue Mage" }
+                { "BLU", "Blue Mage" },
+                { "PCT", "Pictohmanser" },
+                { "VPR", "Viper" }
             };
 
             // Apply case-insensitive replacements for most job abbreviations

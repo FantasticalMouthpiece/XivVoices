@@ -1198,6 +1198,14 @@ public class PluginWindow : Window
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350);
             
+            if (ImGui.CollapsingHeader("Version 0.3.2.3", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Fix issue where 'ShB' in chat would be read as 'Shadow Bangers' lol.");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Fix issue where auto advance would trigger for unreported dialog while Mute is enabled.");
+            }
+            
             if (ImGui.CollapsingHeader("Version 0.3.2.2", ImGuiTreeNodeFlags.None))
             {
                 ImGui.Bullet();

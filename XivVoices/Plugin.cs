@@ -565,7 +565,7 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
-        if (Config.TextAutoAdvanceEnabled && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
+        if (Config.TextAutoAdvanceEnabled && !Config.Mute && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 
