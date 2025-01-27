@@ -2050,8 +2050,6 @@ namespace XivVoices.Engine
                 string url = await File.ReadAllTextAsync(filePath);
                 
                 if (!this.Database.Plugin.Config.Reports) return;
-                
-                //?user=Erdelia Sairina@Alpha&speaker=Alisaie&sentence=Oh my!&npcid=16877&skeletonid=-1&body=Child&gender=Female&race=Elezen&tribe=Wildwood&eyes=Option 1&folder=missing&comment=
 
                 IEnumerable<string[]> variables = url.Substring(1).Split('&').Select(s => s.Split('='));
                 
