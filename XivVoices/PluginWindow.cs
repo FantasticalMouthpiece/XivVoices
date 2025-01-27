@@ -567,7 +567,10 @@ public class PluginWindow : Window
             ImGui.SameLine();
             ImGui.Text("Announce Reported Lines");
 
-            
+            if (ImGui.Button("Upload Reports"))
+            {
+                XivEngine.Instance.UploadFileReports();
+            }
 
             // END
 

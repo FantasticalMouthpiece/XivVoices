@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Concentus.Structs;
 using Concentus.Oggfile;
 using Xabe.FFmpeg;
-using Newtonsoft.Json;
 using Dalamud.Utility;
 using NAudio.Wave;
 using System.Threading;
@@ -17,10 +16,11 @@ using System.Numerics;
 using XivVoices.LocalTTS;
 using System.Linq;
 using System.Reflection;
-using FFXIVClientStructs.FFXIV.Client.Game;
 
 namespace XivVoices.Engine
 {
+    using System.Text;
+    using Newtonsoft.Json.Linq;
 
     public class XivEngine
     {
@@ -2029,6 +2029,17 @@ namespace XivVoices.Engine
 
         }
 
+        public async void UploadFileReports()
+        {
+            if (Directory.Exists(this.Database.ReportsPath))
+            {
+                foreach (string file in Directory.EnumerateFiles(Database.ReportsPath))
+                {
+                    await ProcessReportFileAsync(file);
+                }
+            }
+        }
+
         // This function sends reports when the user has failed to
         // send them previously due to my server being offline
         private async Task ProcessReportFileAsync(string filePath)
@@ -2037,22 +2048,43 @@ namespace XivVoices.Engine
             {
                 if (!File.Exists(filePath)) return; // Ensure file still exists
                 string url = await File.ReadAllTextAsync(filePath);
+                
                 if (!this.Database.Plugin.Config.Reports) return;
+                
+                //?user=Erdelia Sairina@Alpha&speaker=Alisaie&sentence=Oh my!&npcid=16877&skeletonid=-1&body=Child&gender=Female&race=Elezen&tribe=Wildwood&eyes=Option 1&folder=missing&comment=
+
+                IEnumerable<string[]> variables = url.Substring(1).Split('&').Select(s => s.Split('='));
+                
+                JObject jObject = new();
+                
+                foreach (string[] variable in variables)
+                {
+                    if(variable.Length == 2)
+                        jObject.Add(variable[0], variable[1]);
+                    else
+                        Plugin.PluginLog.Warning($"Error reading query from {filePath}: {url}");
+                }
+                
+                Plugin.PluginLog.Info(jObject.ToString());
+
                 try
                 {
-                    HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url);
+                    HttpResponseMessage response = await client.PostAsync(@"http://localhost:5260/report", new StringContent(jObject.ToString(), Encoding.UTF8, "application/json"));
                     response.EnsureSuccessStatusCode();
                     string responseBody = await response.Content.ReadAsStringAsync();
+                    Plugin.PluginLog.Info(responseBody);
                     DeleteFileWithRetry(filePath);
                 }
                 catch (HttpRequestException e)
                 {
-                    XivEngine.Instance.Database.Plugin.PrintError($"HTTP request failed for file {filePath}: {e.Message}");
+                    Plugin.PluginLog.Error(e.ToString());
+                    //XivEngine.Instance.Database.Plugin.PrintError($"HTTP request failed for file {filePath}: {e.Message}");
                 }
             }
             catch (Exception ex)
             {
-                XivEngine.Instance.Database.Plugin.PrintError($"Failed to process report file {filePath}: {ex.Message}");
+                Plugin.PluginLog.Error(ex.ToString());
+                //XivEngine.Instance.Database.Plugin.PrintError($"Failed to process report file {filePath}: {ex.Message}");
             }
         }
         private void DeleteFileWithRetry(string path)
