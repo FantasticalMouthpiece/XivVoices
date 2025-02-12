@@ -297,10 +297,10 @@ namespace XivVoices.Engine
             string pathWith_Data = _pluginInterface.AssemblyLocation.DirectoryName;
             RootPath = Path.GetDirectoryName(pathWith_Data);
             
-            string directory = this.Plugin.Config.WorkingDirectory;
+            string directory = Plugin.Config.WorkingDirectory;
             DirectoryPath = directory;
 
-            this.Plugin.Config.Initialized = false;
+            Plugin.Config.Initialized = false;
             bool dataAndToolsExist = true;
 
             // Check for Data folder
@@ -335,7 +335,7 @@ namespace XivVoices.Engine
 
 
             if (dataAndToolsExist)
-                this.Plugin.Config.Initialized = true;
+                Plugin.Config.Initialized = true;
 
             
 
@@ -347,7 +347,7 @@ namespace XivVoices.Engine
 
         public void UpdateDirectory()
         {
-            DirectoryPath = this.Plugin.Config.WorkingDirectory;
+            DirectoryPath = Plugin.Config.WorkingDirectory;
 
             if (!Directory.Exists(DirectoryPath))
             {
@@ -1014,7 +1014,7 @@ namespace XivVoices.Engine
             {
                 msg.Speaker = Nameless[msg.Sentence];
             }
-            else if (this.Plugin.Config.FrameworkActive)
+            else if (Plugin.Config.FrameworkActive)
             {
                 string filePath = DirectoryPath + "/nameless.json";
                 Nameless[msg.Sentence] = msg.Speaker;

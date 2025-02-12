@@ -109,13 +109,13 @@ public class Plugin : IDalamudPlugin
 
     public IGameInteropProvider InteropProvider { get; set; }
 
-    public Configuration Config { get; }
+    public static Configuration Config { get; set; }
 
     public PluginWindow Window => _window;
 
     public MediaCameraObject PlayerCamera { get; private set; }
 
-    public IDalamudPluginInterface Interface { get; }
+    public static IDalamudPluginInterface Interface { get; set; }
 
     public IChatGui Chat { get; }
 
@@ -171,7 +171,7 @@ public class Plugin : IDalamudPlugin
             ClientState = clientState;
             // Get or create a configuration object
             Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
-            Config.Initialize(Interface);
+            Config.Initialize();
             //webSocketServer = new XIVVWebSocketServer(this.config, this);
             // Initialize the UI
             windowSystem = new WindowSystem(typeof(Plugin).AssemblyQualifiedName);
@@ -179,8 +179,6 @@ public class Plugin : IDalamudPlugin
             Interface.UiBuilder.DisableAutomaticUiHide = true;
             Interface.UiBuilder.DisableGposeUiHide = true;
             _window.ClientState = ClientState;
-            _window.Configuration = Config;
-            _window.PluginInterface = Interface;
             _window.PluginReference = this;
             if (_window is not null) windowSystem.AddWindow(_window);
             Interface.UiBuilder.Draw += UiBuilder_Draw;
@@ -565,6 +563,8 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
+        // TODO: Preventing auto advance is player is bound by a duty breaks auto-advance for cutscenes that start right after
+        // initiating a solo duty, and some other ones too.
         if (Config.TextAutoAdvanceEnabled && !Config.Mute && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
@@ -781,30 +781,22 @@ public class Plugin : IDalamudPlugin
                         break;
                     case "on":
                         Config.Active = true;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = true;
+                        Config.Save();
                         break;
                     case "off":
                         Config.Active = false;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = false;
+                        Config.Save();
                         break;
                     case "mute":
                         if (!Config.Mute)
                         {
                             Config.Mute = true;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = true;
+                            Config.Save();
                         }
                         else
                         {
                             Config.Mute = false;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = false;
+                            Config.Save();
                         }
 
                         break;
@@ -814,12 +806,12 @@ public class Plugin : IDalamudPlugin
                     case "volup":
                         Config.Volume = Math.Clamp(Config.Volume + 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume + 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
                     case "voldown":
                         Config.Volume = Math.Clamp(Config.Volume - 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume - 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
                     default:
                         _window.Toggle();

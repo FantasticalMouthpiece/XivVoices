@@ -74,10 +74,6 @@ public class PluginWindow : Window
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize;
     }
 
-    public Configuration Configuration { get; set; }
-
-    public IDalamudPluginInterface PluginInterface { get; internal set; }
-
     internal IClientState ClientState
     {
         get => clientState;
@@ -138,7 +134,7 @@ public class PluginWindow : Window
     {
         if (clientState.IsLoggedIn)
         {
-            if (!Configuration.Initialized)
+            if (!Plugin.Config.Initialized)
             {
                 InitializationWindow();
             }
@@ -154,7 +150,7 @@ public class PluginWindow : Window
                             ImGui.EndTabItem();
                         }
 
-                        if (ImGui.BeginTabItem("Dialogue Settings"))
+                        if (ImGui.BeginTabItem("^"))
                         {
                             DrawSettings();
                             ImGui.EndTabItem();
@@ -209,7 +205,7 @@ public class PluginWindow : Window
                         ImGui.SetTooltip("Join Our Discord Community");
 
 
-                    if (Configuration.FrameworkActive)
+                    if (Plugin.Config.FrameworkActive)
                         if (ImGui.ImageButton(iconHandle, new Vector2(42, 42), new Vector2(1, 1)))
                             isFrameworkWindowOpen = true;
 
@@ -306,7 +302,7 @@ public class PluginWindow : Window
     private void RequestSave()
     {
         Plugin.PluginLog.Info("RequestSave");
-        Configuration.Save();
+        Plugin.Config.Save();
         needSave = false;
     }
 
@@ -374,7 +370,7 @@ public class PluginWindow : Window
         //else
         //    ImGui.Dummy(new Vector2(200, 200));
 
-        ImGui.TextWrapped("Working Directory is " + Configuration.WorkingDirectory);
+        ImGui.TextWrapped("Working Directory is " + Plugin.Config.WorkingDirectory);
         ImGui.Dummy(new Vector2(0, 10));
         ImGui.Unindent(30);
 
@@ -388,7 +384,7 @@ public class PluginWindow : Window
         if (ImGui.Combo("##Drives", ref driveIndex, driveNames, driveNames.Length))
         {
             selectedDrive = drives[driveIndex];
-            Configuration.WorkingDirectory = $"{selectedDrive}/XIV_Voices";
+            Plugin.Config.WorkingDirectory = $"{selectedDrive}/XIV_Voices";
         }
 
         ImGui.Dummy(new Vector2(0, 50));
@@ -490,7 +486,7 @@ public class PluginWindow : Window
             ImGui.Image(logoHandle, new Vector2(200, 200));
 
             // Working Directory
-            ImGui.TextWrapped("Working Directory is " + Configuration.WorkingDirectory);
+            ImGui.TextWrapped("Working Directory is " + Plugin.Config.WorkingDirectory);
             ImGui.Dummy(new Vector2(0, 10));
 
             // Data
@@ -518,10 +514,10 @@ public class PluginWindow : Window
 
             // Xiv Voices Enabled
             ImGui.Dummy(new Vector2(0, 15));
-            var activeValue = Configuration.Active;
+            var activeValue = Plugin.Config.Active;
             if (ImGui.Checkbox("##xivVoicesActive", ref activeValue))
             {
-                Configuration.Active = activeValue;
+                Plugin.Config.Active = activeValue;
                 needSave = true;
             }
 
@@ -533,10 +529,10 @@ public class PluginWindow : Window
 
             // OnlineRequests
             ImGui.Dummy(new Vector2(0, 8));
-            var onlineRequests = this.Configuration.OnlineRequests;
+            var onlineRequests = this.Plugin.Config.OnlineRequests;
             if (ImGui.Checkbox("##onlineRequests", ref onlineRequests))
             {
-                this.configuration.OnlineRequests = onlineRequests;
+                this.Plugin.Config.OnlineRequests = onlineRequests;
                 needSave = true;
             };
             ImGui.SameLine();
@@ -544,10 +540,10 @@ public class PluginWindow : Window
             */
             // Reports Enabled
             ImGui.Dummy(new Vector2(0, 8));
-            var reports = this.Configuration.Reports;
+            var reports = Plugin.Config.Reports;
             if (ImGui.Checkbox("##reports", ref reports))
             {
-                Configuration.Reports = reports;
+                Plugin.Config.Reports = reports;
                 needSave = true;
             };
             ImGui.SameLine();
@@ -558,10 +554,10 @@ public class PluginWindow : Window
             ImGui.PopStyleColor();
 
             // AnnounceReports
-            var announceReports = this.Configuration.AnnounceReports;
+            var announceReports = Plugin.Config.AnnounceReports;
             if (ImGui.Checkbox("##announceReports", ref announceReports))
             {
-                Configuration.AnnounceReports = announceReports;
+                Plugin.Config.AnnounceReports = announceReports;
                 needSave = true;
             };
             ImGui.SameLine();
@@ -597,10 +593,10 @@ public class PluginWindow : Window
 
 
             // SayEnabled
-            var sayEnabled = Configuration.SayEnabled;
+            var sayEnabled = Plugin.Config.SayEnabled;
             if (ImGui.Checkbox("##sayEnabled", ref sayEnabled))
             {
-                Configuration.SayEnabled = sayEnabled;
+                Plugin.Config.SayEnabled = sayEnabled;
                 needSave = true;
             }
 
@@ -609,10 +605,10 @@ public class PluginWindow : Window
             ImGui.Text("Say Enabled");
 
             // TellEnabled
-            var tellEnabled = Configuration.TellEnabled;
+            var tellEnabled = Plugin.Config.TellEnabled;
             if (ImGui.Checkbox("##tellEnabled", ref tellEnabled))
             {
-                Configuration.TellEnabled = tellEnabled;
+                Plugin.Config.TellEnabled = tellEnabled;
                 needSave = true;
             }
 
@@ -621,10 +617,10 @@ public class PluginWindow : Window
             ImGui.Text("Tell Enabled");
 
             // ShoutEnabled
-            var shoutEnabled = Configuration.ShoutEnabled;
+            var shoutEnabled = Plugin.Config.ShoutEnabled;
             if (ImGui.Checkbox("##shoutEnabled", ref shoutEnabled))
             {
-                Configuration.ShoutEnabled = shoutEnabled;
+                Plugin.Config.ShoutEnabled = shoutEnabled;
                 needSave = true;
             }
 
@@ -633,10 +629,10 @@ public class PluginWindow : Window
             ImGui.Text("Shout/Yell Enabled");
 
             // PartyEnabled
-            var partyEnabled = Configuration.PartyEnabled;
+            var partyEnabled = Plugin.Config.PartyEnabled;
             if (ImGui.Checkbox("##partyEnabled", ref partyEnabled))
             {
-                Configuration.PartyEnabled = partyEnabled;
+                Plugin.Config.PartyEnabled = partyEnabled;
                 needSave = true;
             }
 
@@ -645,10 +641,10 @@ public class PluginWindow : Window
             ImGui.Text("Party Enabled");
 
             // AllianceEnabled
-            var allianceEnabled = Configuration.AllianceEnabled;
+            var allianceEnabled = Plugin.Config.AllianceEnabled;
             if (ImGui.Checkbox("##allianceEnabled", ref allianceEnabled))
             {
-                Configuration.AllianceEnabled = allianceEnabled;
+                Plugin.Config.AllianceEnabled = allianceEnabled;
                 needSave = true;
             }
 
@@ -657,10 +653,10 @@ public class PluginWindow : Window
             ImGui.Text("Alliance Enabled");
 
             // FreeCompanyEnabled
-            var freeCompanyEnabled = Configuration.FreeCompanyEnabled;
+            var freeCompanyEnabled = Plugin.Config.FreeCompanyEnabled;
             if (ImGui.Checkbox("##freeCompanyEnabled", ref freeCompanyEnabled))
             {
-                Configuration.FreeCompanyEnabled = freeCompanyEnabled;
+                Plugin.Config.FreeCompanyEnabled = freeCompanyEnabled;
                 needSave = true;
             }
 
@@ -669,10 +665,10 @@ public class PluginWindow : Window
             ImGui.Text("Free Company Enabled");
 
             // LinkshellEnabled
-            var linkshellEnabled = Configuration.LinkshellEnabled;
+            var linkshellEnabled = Plugin.Config.LinkshellEnabled;
             if (ImGui.Checkbox("##linkshellEnabled", ref linkshellEnabled))
             {
-                Configuration.LinkshellEnabled = linkshellEnabled;
+                Plugin.Config.LinkshellEnabled = linkshellEnabled;
                 needSave = true;
             }
 
@@ -681,10 +677,10 @@ public class PluginWindow : Window
             ImGui.Text("Linkshell Enabled");
 
             // BattleDialoguesEnabled
-            var battleDialoguesEnabled = Configuration.BattleDialoguesEnabled;
+            var battleDialoguesEnabled = Plugin.Config.BattleDialoguesEnabled;
             if (ImGui.Checkbox("##battleDialoguesEnabled", ref battleDialoguesEnabled))
             {
-                Configuration.BattleDialoguesEnabled = battleDialoguesEnabled;
+                Plugin.Config.BattleDialoguesEnabled = battleDialoguesEnabled;
                 needSave = true;
             }
 
@@ -693,10 +689,10 @@ public class PluginWindow : Window
             ImGui.Text("Battle Dialogues Enabled");
 
             // RetainersEnabled
-            var retainersEnabled = Configuration.RetainersEnabled;
+            var retainersEnabled = Plugin.Config.RetainersEnabled;
             if (ImGui.Checkbox("##retainersEnabled", ref retainersEnabled))
             {
-                Configuration.RetainersEnabled = retainersEnabled;
+                Plugin.Config.RetainersEnabled = retainersEnabled;
                 needSave = true;
             }
 
@@ -710,10 +706,10 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 10));
 
             // BubblesEnabled
-            var bubblesEnabled = Configuration.BubblesEnabled;
+            var bubblesEnabled = Plugin.Config.BubblesEnabled;
             if (ImGui.Checkbox("##bubblesEnabled", ref bubblesEnabled))
             {
-                Configuration.BubblesEnabled = bubblesEnabled;
+                Plugin.Config.BubblesEnabled = bubblesEnabled;
                 needSave = true;
             }
 
@@ -724,15 +720,15 @@ public class PluginWindow : Window
             ImGui.Indent(28);
             var nullcheck = false;
             // BubblesEverywhere
-            var bubblesEverywhere = Configuration.BubblesEverywhere;
-            if (Configuration.BubblesEnabled)
+            var bubblesEverywhere = Plugin.Config.BubblesEverywhere;
+            if (Plugin.Config.BubblesEnabled)
             {
                 if (ImGui.Checkbox("##bubblesEverywhere", ref bubblesEverywhere))
                     if (bubblesEverywhere)
                     {
-                        Configuration.BubblesEverywhere = bubblesEverywhere;
-                        Configuration.BubblesInSafeZones = !bubblesEverywhere;
-                        Configuration.BubblesInBattleZones = !bubblesEverywhere;
+                        Plugin.Config.BubblesEverywhere = bubblesEverywhere;
+                        Plugin.Config.BubblesInSafeZones = !bubblesEverywhere;
+                        Plugin.Config.BubblesInBattleZones = !bubblesEverywhere;
                         needSave = true;
                     }
 
@@ -747,15 +743,15 @@ public class PluginWindow : Window
             ImGui.Text("Enable Bubbles Everywhere");
 
             // BubblesInSafeZones
-            var bubblesOutOfBattlesOnly = Configuration.BubblesInSafeZones;
-            if (Configuration.BubblesEnabled)
+            var bubblesOutOfBattlesOnly = Plugin.Config.BubblesInSafeZones;
+            if (Plugin.Config.BubblesEnabled)
             {
                 if (ImGui.Checkbox("##bubblesOutOfBattlesOnly", ref bubblesOutOfBattlesOnly))
                     if (bubblesOutOfBattlesOnly)
                     {
-                        Configuration.BubblesEverywhere = !bubblesOutOfBattlesOnly;
-                        Configuration.BubblesInSafeZones = bubblesOutOfBattlesOnly;
-                        Configuration.BubblesInBattleZones = !bubblesOutOfBattlesOnly;
+                        Plugin.Config.BubblesEverywhere = !bubblesOutOfBattlesOnly;
+                        Plugin.Config.BubblesInSafeZones = bubblesOutOfBattlesOnly;
+                        Plugin.Config.BubblesInBattleZones = !bubblesOutOfBattlesOnly;
                         needSave = true;
                     }
 
@@ -770,15 +766,15 @@ public class PluginWindow : Window
             ImGui.Text("Only Enable Chat Bubbles In Safe Zones");
 
             // BubblesInBattleZones
-            var bubblesInBattlesOnly = Configuration.BubblesInBattleZones;
-            if (Configuration.BubblesEnabled)
+            var bubblesInBattlesOnly = Plugin.Config.BubblesInBattleZones;
+            if (Plugin.Config.BubblesEnabled)
             {
                 if (ImGui.Checkbox("##bubblesInBattlesOnly", ref bubblesInBattlesOnly))
                     if (bubblesInBattlesOnly)
                     {
-                        Configuration.BubblesEverywhere = !bubblesInBattlesOnly;
-                        Configuration.BubblesInSafeZones = !bubblesInBattlesOnly;
-                        Configuration.BubblesInBattleZones = bubblesInBattlesOnly;
+                        Plugin.Config.BubblesEverywhere = !bubblesInBattlesOnly;
+                        Plugin.Config.BubblesInSafeZones = !bubblesInBattlesOnly;
+                        Plugin.Config.BubblesInBattleZones = bubblesInBattlesOnly;
                         needSave = true;
                     }
 
@@ -793,10 +789,10 @@ public class PluginWindow : Window
             ImGui.Text("Only Enable Chat Bubbles in Battle Zones");
 
             // BubbleChatEnabled
-            var bubbleChatEnabled = Configuration.BubbleChatEnabled;
+            var bubbleChatEnabled = Plugin.Config.BubbleChatEnabled;
             if (ImGui.Checkbox("##bubbleChatEnabled", ref bubbleChatEnabled))
             {
-                Configuration.BubbleChatEnabled = bubbleChatEnabled;
+                Plugin.Config.BubbleChatEnabled = bubbleChatEnabled;
                 needSave = true;
             }
 
@@ -814,10 +810,10 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 10));
             
             // TextAutoAdvanceEnabled
-            var textAutoAdvanceEnabled = Configuration.TextAutoAdvanceEnabled;
+            var textAutoAdvanceEnabled = Plugin.Config.TextAutoAdvanceEnabled;
             if (ImGui.Checkbox("##TextAutoAdvanceEnabled", ref textAutoAdvanceEnabled))
             {
-                Configuration.TextAutoAdvanceEnabled = textAutoAdvanceEnabled;
+                Plugin.Config.TextAutoAdvanceEnabled = textAutoAdvanceEnabled;
                 needSave = true;
             }
 
@@ -826,14 +822,14 @@ public class PluginWindow : Window
             ImGui.Text("Enable Text Auto-Advance");
 
             // TextAutoHideEnabled
-            // var textAutoHideEnabled = Configuration.TextAutoHideEnabled;
+            // var textAutoHideEnabled = Plugin.Config.TextAutoHideEnabled;
             // if (ImGui.Checkbox("##TextAutoHideEnabled", ref textAutoHideEnabled))
             // {
-            //     Configuration.TextAutoHideEnabled = textAutoHideEnabled;
+            //     Plugin.Config.TextAutoHideEnabled = textAutoHideEnabled;
             //
             //     if (!textAutoHideEnabled)
             //     {
-            //         Configuration.TextAutoHideOnlyInCutscenes = false;
+            //         Plugin.Config.TextAutoHideOnlyInCutscenes = false;
             //     }
             //     
             //     needSave = true;
@@ -841,14 +837,14 @@ public class PluginWindow : Window
             // ImGui.SameLine();
             // ImGui.Text("Enable Text Auto-Hide");
             //
-            // var textAutoHideOnlyInCutscenes = Configuration.TextAutoHideOnlyInCutscenes;
+            // var textAutoHideOnlyInCutscenes = Plugin.Config.TextAutoHideOnlyInCutscenes;
             // if (textAutoHideEnabled)
             // {
             //     ImGui.Indent(28);
             //     
             //     if (ImGui.Checkbox("##TextAutoHideOnlyInCutscenes", ref textAutoHideOnlyInCutscenes))
             //     {
-            //         Configuration.TextAutoHideOnlyInCutscenes = textAutoHideOnlyInCutscenes;
+            //         Plugin.Config.TextAutoHideOnlyInCutscenes = textAutoHideOnlyInCutscenes;
             //         needSave = true;
             //     };
             //     ImGui.SameLine();
@@ -866,10 +862,10 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 10));
 
             // ReplaceVoicedARRCutscenes
-            var replaceVoicedARRCutscenes = Configuration.ReplaceVoicedARRCutscenes;
+            var replaceVoicedARRCutscenes = Plugin.Config.ReplaceVoicedARRCutscenes;
             if (ImGui.Checkbox("##replaceVoicedARRCutscenes", ref replaceVoicedARRCutscenes))
             {
-                Configuration.ReplaceVoicedARRCutscenes = replaceVoicedARRCutscenes;
+                Plugin.Config.ReplaceVoicedARRCutscenes = replaceVoicedARRCutscenes;
                 needSave = true;
             }
 
@@ -878,10 +874,10 @@ public class PluginWindow : Window
             ImGui.Text("Replace ARR Cutscenes");
 
             // SkipEnabled
-            var skipEnabled = Configuration.SkipEnabled;
+            var skipEnabled = Plugin.Config.SkipEnabled;
             if (ImGui.Checkbox("##interruptEnabled", ref skipEnabled))
             {
-                Configuration.SkipEnabled = skipEnabled;
+                Plugin.Config.SkipEnabled = skipEnabled;
                 needSave = true;
             }
 
@@ -912,10 +908,10 @@ public class PluginWindow : Window
             // Mute Button -----------------------------------------------
 
             ImGui.Dummy(new Vector2(0, 20));
-            var mute = Configuration.Mute;
+            var mute = Plugin.Config.Mute;
             if (ImGui.Checkbox("##mute", ref mute))
             {
-                Configuration.Mute = mute;
+                Plugin.Config.Mute = mute;
                 needSave = true;
             }
 
@@ -925,10 +921,10 @@ public class PluginWindow : Window
 
             // Lipsync Enabled -----------------------------------------------
             ImGui.Dummy(new Vector2(0, 10));
-            var lipsyncEnabled = Configuration.LipsyncEnabled;
+            var lipsyncEnabled = Plugin.Config.LipsyncEnabled;
             if (ImGui.Checkbox("##lipsyncEnabled", ref lipsyncEnabled))
             {
-                Configuration.LipsyncEnabled = lipsyncEnabled;
+                Plugin.Config.LipsyncEnabled = lipsyncEnabled;
                 needSave = true;
             }
 
@@ -940,10 +936,10 @@ public class PluginWindow : Window
 
             ImGui.Dummy(new Vector2(0, 20));
             ImGui.TextWrapped("Volume Control");
-            var volume = Configuration.Volume;
+            var volume = Plugin.Config.Volume;
             if (ImGui.SliderInt("##volumeSlider", ref volume, 0, 100, volume.ToString()))
             {
-                Configuration.Volume = volume;
+                Plugin.Config.Volume = volume;
                 needSave = true;
             }
 
@@ -954,10 +950,10 @@ public class PluginWindow : Window
 
             ImGui.Dummy(new Vector2(0, 20));
             ImGui.TextWrapped("Speed Control");
-            var speed = Configuration.Speed;
+            var speed = Plugin.Config.Speed;
             if (ImGui.SliderInt("##speedSlider", ref speed, 75, 150, speed.ToString()))
             {
-                Configuration.Speed = speed;
+                Plugin.Config.Speed = speed;
                 needSave = true;
             }
 
@@ -968,11 +964,11 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 20));
             ImGui.TextWrapped("Playback Engine");
             var audioEngines = new[] { "DirectSound", "Wasapi", "WaveOut" };
-            var currentEngine = Configuration.AudioEngine - 1;
+            var currentEngine = Plugin.Config.AudioEngine - 1;
 
             if (ImGui.Combo("##audioEngine", ref currentEngine, audioEngines, audioEngines.Length))
             {
-                Configuration.AudioEngine = currentEngine + 1;
+                Plugin.Config.AudioEngine = currentEngine + 1;
                 needSave = true;
             }
 
@@ -990,10 +986,10 @@ public class PluginWindow : Window
             // Local AI Settings Settings ----------------------------------------------
 
             ImGui.Dummy(new Vector2(0, 20));
-            var localTTSEnabled = Configuration.LocalTTSEnabled;
+            var localTTSEnabled = Plugin.Config.LocalTTSEnabled;
             if (ImGui.Checkbox("##localTTSEnabled", ref localTTSEnabled))
             {
-                Configuration.LocalTTSEnabled = localTTSEnabled;
+                Plugin.Config.LocalTTSEnabled = localTTSEnabled;
                 needSave = true;
             }
 
@@ -1005,12 +1001,12 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 5));
             ImGui.Text("Local TTS Ungendered Voice:");
             ImGui.SameLine();
-            var localTTSUngendered = Configuration.LocalTTSUngendered;
+            var localTTSUngendered = Plugin.Config.LocalTTSUngendered;
             string[] genders = { "Male", "Female" };
             ImGui.SetNextItemWidth(129);
             if (ImGui.Combo("##localTTSUngendered", ref localTTSUngendered, genders, genders.Length))
             {
-                Configuration.LocalTTSUngendered = localTTSUngendered;
+                Plugin.Config.LocalTTSUngendered = localTTSUngendered;
                 needSave = true;
             }
 
@@ -1019,18 +1015,18 @@ public class PluginWindow : Window
             ImGui.Dummy(new Vector2(0, 5));
             ImGui.Text("Volume:");
             ImGui.SameLine();
-            var localTTSVolume = Configuration.LocalTTSVolume;
+            var localTTSVolume = Plugin.Config.LocalTTSVolume;
             if (ImGui.SliderInt("##localTTSVolumeSlider", ref localTTSVolume, 0, 100, localTTSVolume.ToString()))
             {
-                Configuration.LocalTTSVolume = localTTSVolume;
+                Plugin.Config.LocalTTSVolume = localTTSVolume;
                 needSave = true;
             }
 
             ImGui.Dummy(new Vector2(0, 5));
-            var localTTSPlayerSays = Configuration.LocalTTSPlayerSays;
+            var localTTSPlayerSays = Plugin.Config.LocalTTSPlayerSays;
             if (ImGui.Checkbox("##localTTSPlayerSays", ref localTTSPlayerSays))
             {
-                Configuration.LocalTTSPlayerSays = localTTSPlayerSays;
+                Plugin.Config.LocalTTSPlayerSays = localTTSPlayerSays;
                 needSave = true;
             }
 
@@ -1040,10 +1036,10 @@ public class PluginWindow : Window
 
 
             ImGui.Dummy(new Vector2(0, 5));
-            var ignoreNarratorLines = Configuration.IgnoreNarratorLines;
+            var ignoreNarratorLines = Plugin.Config.IgnoreNarratorLines;
             if (ImGui.Checkbox("##ignoreNarratorLines", ref ignoreNarratorLines))
             {
-                Configuration.IgnoreNarratorLines = ignoreNarratorLines;
+                Plugin.Config.IgnoreNarratorLines = ignoreNarratorLines;
                 needSave = true;
             }
 
@@ -1066,7 +1062,7 @@ public class PluginWindow : Window
 
     private void LogsSettings()
     {
-        if (!Configuration.Active)
+        if (!Plugin.Config.Active)
         {
             ImGui.Dummy(new Vector2(0, 20));
             ImGui.TextWrapped("Xiv Voices is Disabled");
@@ -1142,10 +1138,10 @@ public class PluginWindow : Window
     private void Framework_General()
     {
         ImGui.Dummy(new Vector2(0, 10));
-        var frameworkOnline = Configuration.FrameworkOnline;
+        var frameworkOnline = Plugin.Config.FrameworkOnline;
         if (ImGui.Checkbox("##frameworkOnline", ref frameworkOnline))
         {
-            Configuration.FrameworkOnline = frameworkOnline;
+            Plugin.Config.FrameworkOnline = frameworkOnline;
             needSave = true;
         }
 
@@ -1273,6 +1269,9 @@ public class PluginWindow : Window
             ImGui.SetNextItemWidth(112);
             if (ImGui.InputText("##playerName", ref playerName, 100))
             {
+                // TODO: ????, needSave does not touch XivEngine.Instance.Database.whateverthefuck
+                // I also don't know what this framework window is, it is only shown when Config.FrameworkActive is true
+                // but the plugin never sets this value.
                 XivEngine.Instance.Database.PlayerName = playerName;
                 needSave = true;
             }
