@@ -60,9 +60,15 @@ public class Configuration : IPluginConfiguration
 
     public void Initialize()
     {
+      string configPath = $"C:/XIV_Voices/Tools/config.json"; // was hardcoded to C:\ previously, so we stick with it.
+      if (!File.Exists(configPath))
+      {
+        ConfigMigrated = true;
+        Save();
+      }
+      
       if (!ConfigMigrated)
       {
-        string configPath = $"C:/XIV_Voices/Tools/config.json"; // was hardcoded to C:\ previously, so we stick with it.
         Plugin.PluginLog.Information($"Migrating configuration: {configPath}");
         var jsonString = File.ReadAllText(configPath);
         var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
