@@ -56,8 +56,60 @@ public class Configuration : IPluginConfiguration
     public bool FrameworkOnline { get; set; }
     public int Version { get; set; }
 
+    public bool ConfigMigrated { get; set; } = false;
+
     public void Initialize()
     {
+      if (!ConfigMigrated)
+      {
+        string configPath = $"{WorkingDirectory}/Tools/config.json";
+        var jsonString = File.ReadAllText(configPath);
+        var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
+        if (loadedConfig != null)
+        {
+          Active = loadedConfig.Active;
+          Initialized = loadedConfig.Initialized;
+          WorkingDirectory = loadedConfig.WorkingDirectory;
+          Reports = loadedConfig.Reports;
+          AnnounceReports = loadedConfig.AnnounceReports;
+          OnlineRequests = loadedConfig.OnlineRequests;
+          ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
+          LipsyncEnabled = loadedConfig.LipsyncEnabled;
+          SkipEnabled = loadedConfig.SkipEnabled;
+          TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
+          TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
+          TextAutoHideOnlyInCutscenes = loadedConfig.TextAutoHideOnlyInCutscenes;
+          SayEnabled = loadedConfig.SayEnabled;
+          TellEnabled = loadedConfig.TellEnabled;
+          ShoutEnabled = loadedConfig.ShoutEnabled;
+          PartyEnabled = loadedConfig.PartyEnabled;
+          AllianceEnabled = loadedConfig.AllianceEnabled;
+          FreeCompanyEnabled = loadedConfig.FreeCompanyEnabled;
+          LinkshellEnabled = loadedConfig.LinkshellEnabled;
+          BattleDialoguesEnabled = loadedConfig.BattleDialoguesEnabled;
+          RetainersEnabled = loadedConfig.RetainersEnabled;
+          BubblesEnabled = loadedConfig.BubblesEnabled;
+          BubblesEverywhere = loadedConfig.BubblesEverywhere;
+          BubblesInSafeZones = loadedConfig.BubblesInSafeZones;
+          BubblesInBattleZones = loadedConfig.BubblesInBattleZones;
+          BubbleChatEnabled = loadedConfig.BubbleChatEnabled;
+          Mute = loadedConfig.Mute;
+          Volume = loadedConfig.Volume;
+          Speed = loadedConfig.Speed;
+          AudioEngine = loadedConfig.AudioEngine;
+          PollyEnabled = loadedConfig.PollyEnabled;
+          LocalTTSEnabled = loadedConfig.LocalTTSEnabled;
+          LocalTTSMale = loadedConfig.LocalTTSMale;
+          LocalTTSFemale = loadedConfig.LocalTTSFemale;
+          LocalTTSUngendered = loadedConfig.LocalTTSUngendered;
+          LocalTTSVolume = loadedConfig.LocalTTSVolume;
+          LocalTTSPlayerSays = loadedConfig.LocalTTSPlayerSays;
+          IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
+          ConfigMigrated = true;
+          Save();
+        }
+      }
+
       // Disabled until bug is fixed.
       TextAutoHideEnabled = false;
       TextAutoHideOnlyInCutscenes = false;
