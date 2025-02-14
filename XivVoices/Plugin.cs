@@ -1,4 +1,4 @@
-#region Usings
+﻿#region Usings
 
 using System;
 using System.Collections.Concurrent;
@@ -563,9 +563,9 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
-        // TODO: Preventing auto advance is player is bound by a duty breaks auto-advance for cutscenes that start right after
-        // initiating a solo duty, and some other ones too.
-        if (Config.TextAutoAdvanceEnabled && !Config.Mute && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
+        // Note: We used to also check for `!IsPlayerBoundByDuty()` but that seems unnecessary now that we check if the TalkAddon is visible.
+        // It would also break auto-advance cutscenes at the start/end of duties.
+        if (Config.TextAutoAdvanceEnabled && !Config.Mute && _addonTalkManager.IsVisible())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 
