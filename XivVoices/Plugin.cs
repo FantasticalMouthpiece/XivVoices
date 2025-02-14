@@ -564,7 +564,7 @@ public class Plugin : IDalamudPlugin
     public void ClickTalk()
     {
         // Note: We used to also check for `!IsPlayerBoundByDuty()` but that seems unnecessary now that we check if the TalkAddon is visible.
-        // It would also break auto-advance cutscenes at the start/end of duties.
+        // It would also break auto-advance in cutscenes at the start/end of duties.
         if (Config.TextAutoAdvanceEnabled && !Config.Mute && _addonTalkManager.IsVisible())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
