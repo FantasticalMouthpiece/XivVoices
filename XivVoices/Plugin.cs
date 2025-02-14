@@ -1,4 +1,4 @@
-﻿#region Usings
+#region Usings
 
 using System;
 using System.Collections.Concurrent;
@@ -792,11 +792,13 @@ public class Plugin : IDalamudPlugin
                         {
                             Config.Mute = true;
                             Config.Save();
+                            Chat.Print("[XIVV] Muted");
                         }
                         else
                         {
                             Config.Mute = false;
                             Config.Save();
+                            Chat.Print("[XIVV] Unmuted");
                         }
 
                         break;
