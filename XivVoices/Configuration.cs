@@ -108,6 +108,11 @@ public class Configuration : IPluginConfiguration
           IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
           ConfigMigrated = true;
           Save();
+          try {
+            File.Delete(configPath);
+          } catch (Exception ex) {
+            Plugin.PluginLog.Error($"Failed to delete configuration: {configPath} - {ex}");
+          }
         }
       }
 
