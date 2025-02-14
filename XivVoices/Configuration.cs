@@ -63,6 +63,7 @@ public class Configuration : IPluginConfiguration
       if (!ConfigMigrated)
       {
         string configPath = $"{WorkingDirectory}/Tools/config.json";
+        Plugin.PluginLog.Information($"Migrating configuration: {configPath}");
         var jsonString = File.ReadAllText(configPath);
         var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
         if (loadedConfig != null)
