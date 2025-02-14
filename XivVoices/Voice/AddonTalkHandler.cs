@@ -729,7 +729,7 @@ namespace XivVoices.Voice {
                 string correctSender = CleanSender(nameToUse);
                 if (lastNPCDialogue == npcName + correctedMessage) return; //Required for Hide Talk Addon so it doesnt repeat lines
                 string genderType = gender ? "Female":"Male";
-                string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
+                string user = $"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                 Engine.XivEngine.Instance.Process("Dialogue", correctSender, id.ToString(), skeleton.ToString(), correctedMessage, body.ToString(), genderType, race.ToString(), tribe.ToString(), eyes.ToString(), _clientState.ClientLanguage.ToString(), new Vector3(-99), npcObject as ICharacter, user);
 
@@ -784,7 +784,7 @@ namespace XivVoices.Voice {
 
                 if (lastBattleDialogue != correctedMessage)
                 {
-                    string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
+                    string user = $"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                     if(Plugin.Config.BubbleChatEnabled)
                         _plugin.Chat.Print(new XivChatEntry

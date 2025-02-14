@@ -167,7 +167,7 @@ namespace XivVoices.Engine
                     PanningSampleProvider panningProvider = new PanningSampleProvider(volumeProvider);
 
                     var audioInfo = GetAudioInfo(xivMessage, type);
-                    ushort initialRegion = this.Plugin.ClientState.TerritoryType;
+                    ushort initialRegion = Plugin.ClientState.TerritoryType;
 
                     if (!Plugin.Config.Mute)
                     {
@@ -184,7 +184,7 @@ namespace XivVoices.Engine
                             {
                                 var currentPosition = waveStream.CurrentTime.TotalMilliseconds;
                                 audioInfo.percentage = (float)(currentPosition / totalDuration);
-                                if (initialRegion != this.Plugin.ClientState.TerritoryType)
+                                if (initialRegion != Plugin.ClientState.TerritoryType)
                                 {
                                     audioOutput.Stop();
                                     break;

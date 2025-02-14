@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -232,7 +232,7 @@ namespace XivVoices.Engine
                 Plugin.PluginLog.Information("Race after Mapper: " + msg.TtsData.Race);
             }
 
-            string[] fullname = Database.Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+            string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
 
             if (Plugin.Config.FrameworkActive)
             {
@@ -1294,7 +1294,7 @@ namespace XivVoices.Engine
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            bool iAmSpeaking = XivEngine.Instance.Database.Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
@@ -1983,7 +1983,7 @@ namespace XivVoices.Engine
             try
             {
                 Plugin.PluginLog.Information($"Reporting line: \"{xivMessage.Sentence}\"");
-                string[] fullname = Database.Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+                string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
                 xivMessage.Sentence = xivMessage.TtsData.Message;
                 xivMessage.Sentence = xivMessage.Sentence.Replace(fullname[0], "_FIRSTNAME_");
                 if (fullname.Length > 1)
