@@ -58,7 +58,7 @@ jobs:
       - name: Packing Release
         run: |
           pushd XivVoices/bin/Release
-          7z a ../XivVoices.zip *
+          7z a ./XivVoices.zip *
           popd
         shell: bash
 
