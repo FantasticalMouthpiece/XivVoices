@@ -935,6 +935,18 @@ public class PluginWindow : Window, IDisposable
             ImGui.Columns(2, "ChangelogColumns", false);
             ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
             
+            if (ImGui.CollapsingHeader("Version 0.3.3.0", ImGuiTreeNodeFlags.None))
+            {
+                ImGui.Bullet();
+                ImGui.TextWrapped("Use Dalamud SDK for UI");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Use Dalamud SDK for saving/managing config");
+                ImGui.Indent(8 * ImGuiHelpers.GlobalScale);
+                ImGui.Bullet();
+                ImGui.TextWrapped("Any prior configs will be automatically migrated from their old location to APPDATA\\XIVLauncher\\pluginConfigs\\XivVoices.json");
+                ImGui.Unindent(8 * ImGuiHelpers.GlobalScale);
+            }
+            
             if (ImGui.CollapsingHeader("Version 0.3.2.3", ImGuiTreeNodeFlags.None))
             {
                 ImGui.Bullet();
