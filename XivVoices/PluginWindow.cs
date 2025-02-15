@@ -938,13 +938,19 @@ public class PluginWindow : Window, IDisposable
             if (ImGui.CollapsingHeader("Version 0.3.3.0", ImGuiTreeNodeFlags.None))
             {
                 ImGui.Bullet();
-                ImGui.TextWrapped("Use Dalamud SDK for UI");
+                ImGui.TextWrapped("Use Dalamud SDK instead of DalamudPackager");
                 ImGui.Bullet();
-                ImGui.TextWrapped("Use Dalamud SDK for saving/managing config");
+                ImGui.TextWrapped("Use Dalamud for loading/saving the configuration");
                 ImGui.Indent(8 * ImGuiHelpers.GlobalScale);
                 ImGui.Bullet();
                 ImGui.TextWrapped("Any prior configs will be automatically migrated from their old location to APPDATA\\XIVLauncher\\pluginConfigs\\XivVoices.json");
                 ImGui.Unindent(8 * ImGuiHelpers.GlobalScale);
+                ImGui.Bullet();
+                ImGui.TextWrapped("Refactor the configuration window to hopefully improve stability");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Print mute/unmute command results to chat");
+                ImGui.Bullet();
+                ImGui.TextWrapped("Allows auto-advance to function in duty cutscenes again");
             }
             
             if (ImGui.CollapsingHeader("Version 0.3.2.3", ImGuiTreeNodeFlags.None))
