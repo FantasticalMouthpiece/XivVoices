@@ -86,9 +86,6 @@ public class PluginWindow : Window, IDisposable
                 }
                 else
                 {
-                    var backupColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
-                    ImGui.GetStyle().Colors[(int)ImGuiCol.Button] = new Vector4(0, 0, 0, 0);
-
                     // Floating Button ----------------------------------
                     var originPos = ImGui.GetCursorPos();
                     ImGui.SetCursorPosX(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMax().X + (8f * ImGuiHelpers.GlobalScale));
@@ -105,10 +102,10 @@ public class PluginWindow : Window, IDisposable
                     DrawSidebarButton("Audio Logs", GetImGuiHandleForIconId(AudioLogsIconId));
 
                     // Draw the Discord Button
-
                     // dalamud has this cached internally, just get it every frame duh
                     var discord = Plugin.TextureProvider.GetFromFile(Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "discord.png")).GetWrapOrDefault();
                     if (discord == null) return;
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
                     if (ImGui.ImageButton(discord.ImGuiHandle, new Vector2(42 * ImGuiHelpers.GlobalScale, 42 * ImGuiHelpers.GlobalScale)))
                     {
                         var process = new Process();
@@ -123,9 +120,11 @@ public class PluginWindow : Window, IDisposable
                         {
                         }
                     }
+                    ImGui.PopStyleColor();
 
                     if (ImGui.IsItemHovered())
                         ImGui.SetTooltip("Join Our Discord Community");
+                    
                     ImGui.EndChild(); // sidebar
 
                     // Draw a vertical line separator
@@ -173,8 +172,10 @@ public class PluginWindow : Window, IDisposable
             drawList.AddRect(rectMin, rectMax, borderColor, 5.0f, ImDrawFlags.None, 2.0f);
         }
 
+        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
         Vector4 tintColor = active ? new Vector4(0.6f, 0.8f, 1.0f, 1.0f) : new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
         if (ImGui.ImageButton(imageHandle, new Vector2(42 * ImGuiHelpers.GlobalScale), Vector2.Zero, Vector2.One, (int)style.FramePadding.X, Vector4.Zero, tintColor)) currentTab = tabName;
+        ImGui.PopStyleColor();
         if (ImGui.IsItemHovered()) ImGui.SetTooltip(tabName);
     }
 
