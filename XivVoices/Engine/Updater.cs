@@ -92,7 +92,7 @@ namespace XivVoices.Engine
             State.Clear();
             XivEngine.Instance.Database.UpdateDirectory();
 
-            XivEngine.Instance.Database.Plugin.Config.Initialized = true;
+            Plugin.Config.Initialized = true;
             State.Add(1); // Checking Server Manifest State
             Plugin.PluginLog.Information("Updater: Check GetServerManifest");
             await GetServerManifest();

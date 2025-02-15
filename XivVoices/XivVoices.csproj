@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Dalamud.NET.SDK/11.0.0">
 
     <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <LangVersion>11.0</LangVersion>
         <Version>0.3.1.3</Version>
     </PropertyGroup>
@@ -46,7 +46,6 @@
 
     <ItemGroup>
         <PackageReference Include="Concentus.OggFile" Version="1.0.4"/>
-        <PackageReference Include="DalamudPackager" Version="11.0.0"/>
         <PackageReference Include="NAudio" Version="2.2.1"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Xabe.FFmpeg" Version="5.2.6"/>
@@ -101,55 +100,7 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
         </Content>
-        <Content Include="..\Data\icon.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\generalSettings.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\generalSettingsActive.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\dialogueSettings.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\dialogueSettingsActive.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\audioSettings.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\audioSettingsActive.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\archive.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\archiveActive.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
         <Content Include="..\Data\discord.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\ko-fi.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\changelog.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="..\Data\changelogActive.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
         </Content>
@@ -169,23 +120,6 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
         </Content>
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="C:\Users\Arc\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.64.dll"/>
     </ItemGroup>
 
     <ItemGroup>

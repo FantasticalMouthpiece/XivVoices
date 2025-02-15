@@ -47,7 +47,6 @@ public class Plugin : IDalamudPlugin
     private IToastGui _toast;
     private IGameConfig _gameConfig;
     private readonly IFramework _framework;
-    private bool texturesLoaded;
 
     private readonly PluginCommandManager<Plugin> commandManager;
 
@@ -74,20 +73,6 @@ public class Plugin : IDalamudPlugin
     private int _recentCFPop;
     private unsafe Camera* _camera;
 
-    public ISharedImmediateTexture Logo;
-    public ISharedImmediateTexture Icon;
-    public ISharedImmediateTexture GeneralSettings;
-    public ISharedImmediateTexture GeneralSettingsActive;
-    public ISharedImmediateTexture DialogueSettings;
-    public ISharedImmediateTexture DialogueSettingsActive;
-    public ISharedImmediateTexture AudioSettings;
-    public ISharedImmediateTexture AudioSettingsActive;
-    public ISharedImmediateTexture Archive;
-    public ISharedImmediateTexture ArchiveActive;
-    public ISharedImmediateTexture Discord;
-    public ISharedImmediateTexture KoFi;
-    public ISharedImmediateTexture Changelog;
-    public ISharedImmediateTexture ChangelogActive;
     public string Name => "XivVoices Plugin";
 
     public ISigScanner SigScanner { get; set; }
@@ -109,19 +94,19 @@ public class Plugin : IDalamudPlugin
 
     public IGameInteropProvider InteropProvider { get; set; }
 
-    public Configuration Config { get; }
+    public static Configuration Config { get; set; }
 
     public PluginWindow Window => _window;
 
     public MediaCameraObject PlayerCamera { get; private set; }
 
-    public IDalamudPluginInterface Interface { get; }
+    public static IDalamudPluginInterface Interface { get; set; }
 
     public IChatGui Chat { get; }
 
-    public IClientState ClientState { get; }
+    public static IClientState ClientState { get; set; }
 
-    public ITextureProvider TextureProvider { get; }
+    public static ITextureProvider TextureProvider { get; set; }
 
     public AddonTalkHandler AddonTalkHandler { get; set; }
 
@@ -171,16 +156,13 @@ public class Plugin : IDalamudPlugin
             ClientState = clientState;
             // Get or create a configuration object
             Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
-            Config.Initialize(Interface);
+            Config.Initialize();
             //webSocketServer = new XIVVWebSocketServer(this.config, this);
             // Initialize the UI
             windowSystem = new WindowSystem(typeof(Plugin).AssemblyQualifiedName);
             _window = Interface.Create<PluginWindow>();
             Interface.UiBuilder.DisableAutomaticUiHide = true;
             Interface.UiBuilder.DisableGposeUiHide = true;
-            _window.ClientState = ClientState;
-            _window.Configuration = Config;
-            _window.PluginInterface = Interface;
             _window.PluginReference = this;
             if (_window is not null) windowSystem.AddWindow(_window);
             Interface.UiBuilder.Draw += UiBuilder_Draw;
@@ -565,7 +547,9 @@ public class Plugin : IDalamudPlugin
 
     public void ClickTalk()
     {
-        if (Config.TextAutoAdvanceEnabled && !Config.Mute && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
+        // Note: We used to also check for `!IsPlayerBoundByDuty()` but that seems unnecessary now that we check if the TalkAddon is visible.
+        // It would also break auto-advance in cutscenes at the start/end of duties.
+        if (Config.TextAutoAdvanceEnabled && !Config.Mute && _addonTalkManager.IsVisible())
             SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
     }
 
@@ -692,57 +676,6 @@ public class Plugin : IDalamudPlugin
 
     private void UiBuilder_Draw()
     {
-        if (!texturesLoaded)
-            try
-            {
-                var imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "logo.png"));
-                Logo = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "icon.png"));
-                Icon = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "generalSettings.png"));
-                GeneralSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "generalSettingsActive.png"));
-                GeneralSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "dialogueSettings.png"));
-                DialogueSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "dialogueSettingsActive.png"));
-                DialogueSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "audioSettings.png"));
-                AudioSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "audioSettingsActive.png"));
-                AudioSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "archive.png"));
-                Archive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "archiveActive.png"));
-                ArchiveActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "discord.png"));
-                Discord = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "ko-fi.png"));
-                KoFi = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "changelog.png"));
-                Changelog = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "changelogActive.png"));
-                ChangelogActive = TextureProvider.GetFromFile(imagePath);
-                if (Logo != null)
-                {
-                    _window.InitializeImageHandles();
-                    texturesLoaded = true; // Set the flag if the logo is successfully loaded
-                }
-            }
-            catch (Exception e)
-            {
-                PrintError("Failed to load textures: " + e.Message);
-            }
-
         windowSystem.Draw();
     }
 
@@ -781,30 +714,24 @@ public class Plugin : IDalamudPlugin
                         break;
                     case "on":
                         Config.Active = true;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = true;
+                        Config.Save();
                         break;
                     case "off":
                         Config.Active = false;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = false;
+                        Config.Save();
                         break;
                     case "mute":
                         if (!Config.Mute)
                         {
                             Config.Mute = true;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = true;
+                            Config.Save();
+                            Chat.Print("[XIVV] Muted");
                         }
                         else
                         {
                             Config.Mute = false;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = false;
+                            Config.Save();
+                            Chat.Print("[XIVV] Unmuted");
                         }
 
                         break;
@@ -814,12 +741,12 @@ public class Plugin : IDalamudPlugin
                     case "volup":
                         Config.Volume = Math.Clamp(Config.Volume + 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume + 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
                     case "voldown":
                         Config.Volume = Math.Clamp(Config.Volume - 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume - 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
                     default:
                         _window.Toggle();

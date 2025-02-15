@@ -24,7 +24,7 @@ namespace XivVoices.Engine
             Position = position;
             Character = character;
             User = user;
-            Region = XivEngine.Instance.Database.Plugin.ClientState.TerritoryType;
+            Region = Plugin.ClientState.TerritoryType;
         }
 
         public TTSData() {

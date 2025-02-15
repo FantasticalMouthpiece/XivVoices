@@ -75,7 +75,7 @@ namespace XivVoices.Engine
                     Plugin.PluginLog.Information($"PlayAudio ---> audioinfo receieved");
 
                     audioIsStopped = false;
-                    if (!this.Plugin.Config.Mute)
+                    if (!Plugin.Config.Mute)
                     {
                         if (!xivMessage.Ignored && xivMessage.TtsData != null)
                             Plugin.TriggerLipSync(xivMessage.TtsData.Character, waveStream.TotalTime.TotalSeconds.ToString());
@@ -167,9 +167,9 @@ namespace XivVoices.Engine
                     PanningSampleProvider panningProvider = new PanningSampleProvider(volumeProvider);
 
                     var audioInfo = GetAudioInfo(xivMessage, type);
-                    ushort initialRegion = this.Plugin.ClientState.TerritoryType;
+                    ushort initialRegion = Plugin.ClientState.TerritoryType;
 
-                    if (!this.Plugin.Config.Mute)
+                    if (!Plugin.Config.Mute)
                     {
                         using (var audioOutput = GetAudioEngine())
                         {
@@ -184,7 +184,7 @@ namespace XivVoices.Engine
                             {
                                 var currentPosition = waveStream.CurrentTime.TotalMilliseconds;
                                 audioInfo.percentage = (float)(currentPosition / totalDuration);
-                                if (initialRegion != this.Plugin.ClientState.TerritoryType)
+                                if (initialRegion != Plugin.ClientState.TerritoryType)
                                 {
                                     audioOutput.Stop();
                                     break;
@@ -242,7 +242,7 @@ namespace XivVoices.Engine
             try
             {
                 var volumeProvider = new VolumeSampleProvider(waveStream.ToSampleProvider());
-                if (!this.Plugin.Config.Mute)
+                if (!Plugin.Config.Mute)
                 {
                     using (var audioOutput = GetAudioEngine())
                     {
@@ -274,7 +274,7 @@ namespace XivVoices.Engine
 
         IWavePlayer GetAudioEngine()
         {
-            switch (this.Plugin.Config.AudioEngine)
+            switch (Plugin.Config.AudioEngine)
             {
                 case 1:
                     return new DirectSoundOut();

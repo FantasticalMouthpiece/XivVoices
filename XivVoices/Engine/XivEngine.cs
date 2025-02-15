@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -77,7 +77,7 @@ namespace XivVoices.Engine
                 this.ttsEngine = null;
                 Mapper = new DataMapper();
                 _updateTimer = new Timer(Update, null, 1000, 100);
-                if (this.Database.Plugin.Config.FrameworkActive)
+                if (Plugin.Config.FrameworkActive)
                 {
                     this.Database.Plugin.Log($"Running Auto Download");
                     _autoUpdateTimer = new Timer(FrameworkUpdate, null, 10000, 10000);
@@ -119,7 +119,7 @@ namespace XivVoices.Engine
         {
             try
             {
-                if (!Active || !this.Database.Plugin.Config.Active) return;
+                if (!Active || !Plugin.Config.Active) return;
 
                 // If there are any pending dialogues, start processing them
                 if (ffxivMessages.Count > 0)
@@ -129,7 +129,7 @@ namespace XivVoices.Engine
                         Plugin.PluginLog.Information($"Update ---> {msg.TtsData.Speaker}: {msg.TtsData.Message}");
                         if (msg.Network == "Online")
                         {
-                            if (this.Database.Plugin.Config.LocalTTSEnabled && (msg.Reported || msg.Ignored))
+                            if (Plugin.Config.LocalTTSEnabled && (msg.Reported || msg.Ignored))
                                 Task.Run(async () => await SpeakAI(msg));
                             else
                                 Speak(msg);
@@ -145,7 +145,7 @@ namespace XivVoices.Engine
                 if (reports.Count > 0)
                 {
                     ReportXivMessage report = reports.Dequeue();
-                    if (!this.Database.Plugin.Config.FrameworkActive)
+                    if (!Plugin.Config.FrameworkActive)
                         Task.Run(async () => await ReportToArcJSON(report.message, report.folder, report.comment));
                 }
             }
@@ -158,7 +158,7 @@ namespace XivVoices.Engine
 
         private void FrameworkUpdate(object state)
         {
-            if (!Active || !this.Database.Plugin.Config.Active || !this.Database.Plugin.Config.FrameworkActive ) return;
+            if (!Active || !Plugin.Config.Active || !Plugin.Config.FrameworkActive ) return;
 
             if (this.Database.Framework.Queue.Count > 0)
             {
@@ -201,7 +201,7 @@ namespace XivVoices.Engine
             if (ttsData.Speaker == "NPC")
                 return;
 
-            if (this.Database.Plugin.Config.SkipEnabled && (ttsData.Type == "Dialogue" || ttsData.Type == "Cancel") )
+            if (Plugin.Config.SkipEnabled && (ttsData.Type == "Dialogue" || ttsData.Type == "Cancel") )
                 Audio.StopAudio();
 
             if (ttsData.Type == "Cancel")
@@ -232,9 +232,9 @@ namespace XivVoices.Engine
                 Plugin.PluginLog.Information("Race after Mapper: " + msg.TtsData.Race);
             }
 
-            string[] fullname = Database.Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+            string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
 
-            if (this.Database.Plugin.Config.FrameworkActive)
+            if (Plugin.Config.FrameworkActive)
             {
                 msg.Sentence = msg.Sentence.Replace(fullname[0], "_FIRSTNAME_");
 
@@ -280,7 +280,7 @@ namespace XivVoices.Engine
                 }
             }
 
-            if (msg.isRetainer && !this.Database.Plugin.Config.RetainersEnabled) return;
+            if (msg.isRetainer && !Plugin.Config.RetainersEnabled) return;
             if (IgnoredDialogues.Contains(msg.Speaker + msg.Sentence) || this.Database.Ignored.Contains(msg.Speaker)) return;
 
             Plugin.PluginLog.Information($"After processing: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}, [Message]:{msg.TtsData.Message},");
@@ -566,7 +566,7 @@ namespace XivVoices.Engine
             else if (xivMessage.FilePath == "report")
             {
                 xivMessage.Network = "Online";
-                if (!Database.Plugin.Config.FrameworkActive)
+                if (!Plugin.Config.FrameworkActive)
                 {
                     ReportDifferent(xivMessage);
                     xivMessage.Reported = true;
@@ -1224,7 +1224,7 @@ namespace XivVoices.Engine
         #region Audio Methods
         public void Speak(XivMessage _msg)
         {
-            if (Database.Plugin.Config.FrameworkOnline && Database.Plugin.Config.FrameworkActive)
+            if (Plugin.Config.FrameworkOnline && Plugin.Config.FrameworkActive)
                 this.Database.Framework.Process(_msg);
             else
                 Audio.PlayEmptyAudio(_msg);
@@ -1234,19 +1234,19 @@ namespace XivVoices.Engine
         {
             try
             {
-                if (msg.Speaker == "Narrator" && this.Database.Plugin.Config.IgnoreNarratorLines) return;
+                if (msg.Speaker == "Narrator" && Plugin.Config.IgnoreNarratorLines) return;
 
                 if (this.ttsEngine == null)
                     this.ttsEngine = new TTSEngine(Database.Plugin);
 
                 if (localTTS[0] == null)
-                    localTTS[0] = TTSVoiceNative.LoadVoiceFromDisk(this.Database.Plugin.Config.LocalTTSMale);
+                    localTTS[0] = TTSVoiceNative.LoadVoiceFromDisk(Plugin.Config.LocalTTSMale);
                 if (localTTS[1] == null)
-                    localTTS[1] = TTSVoiceNative.LoadVoiceFromDisk(this.Database.Plugin.Config.LocalTTSFemale);
+                    localTTS[1] = TTSVoiceNative.LoadVoiceFromDisk(Plugin.Config.LocalTTSFemale);
 
                 try
                 {
-                    int speaker = this.Database.Plugin.Config.LocalTTSUngendered;
+                    int speaker = Plugin.Config.LocalTTSUngendered;
                     if (msg.TtsData.Gender == "Male")
                         speaker = 0;
                     if (msg.TtsData.Gender == "Female")
@@ -1294,7 +1294,7 @@ namespace XivVoices.Engine
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            bool iAmSpeaking = XivEngine.Instance.Database.Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
@@ -1347,7 +1347,7 @@ namespace XivVoices.Engine
                 }
             }
 
-            if (!saysAdded && XivEngine.Instance.Database.Plugin.Config.LocalTTSPlayerSays)
+            if (!saysAdded && Plugin.Config.LocalTTSPlayerSays)
             {
                 string says = iAmSpeaking ? " say " : " says ";
                 sentence = playerName + says + sentence;
@@ -1539,7 +1539,7 @@ namespace XivVoices.Engine
                     WaveStream waveStream = null;
 
                     // Check for audio speed adjustment or special effects
-                    bool changeSpeed = this.Database.Plugin.Config.Speed != 100;
+                    bool changeSpeed = Plugin.Config.Speed != 100;
                     bool applyEffects = SoundEffects(msg) != "";
 
                     try
@@ -1689,7 +1689,7 @@ namespace XivVoices.Engine
         {
             bool changeSpeed = false;
             string additionalChanges = "";
-            if (XivEngine.Instance.Database.Plugin.Config.Speed != 100) changeSpeed = true;
+            if (Plugin.Config.Speed != 100) changeSpeed = true;
             if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
 
             string filterArgs = "";
@@ -1835,7 +1835,7 @@ namespace XivVoices.Engine
             if (changeSpeed)
             {
                 if (filterArgs != "") filterArgs += ",";
-                filterArgs += $"\"atempo={(XivEngine.Instance.Database.Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
+                filterArgs += $"\"atempo={(Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
             }
 
             if (additionalChanges == "robot")
@@ -1909,8 +1909,8 @@ namespace XivVoices.Engine
         Queue<ReportXivMessage> reports = new Queue<ReportXivMessage>();
         public void ReportUnknown(XivMessage msg)
         {
-            if (Database.Ignored.Contains(msg.Speaker) || Database.Plugin.Config.FrameworkActive) return;
-            if (!this.Database.Plugin.Config.Reports) return;
+            if (Database.Ignored.Contains(msg.Speaker) || Plugin.Config.FrameworkActive) return;
+            if (!Plugin.Config.Reports) return;
             Plugin.PluginLog.Information("ReportUnknown");
 
             reports.Enqueue(new ReportXivMessage(msg, "unknown", ""));
@@ -1918,25 +1918,25 @@ namespace XivVoices.Engine
 
         public void ReportDifferent(XivMessage msg)
         {
-            if (Database.Ignored.Contains(msg.Speaker) || Database.Plugin.Config.FrameworkActive) return;
+            if (Database.Ignored.Contains(msg.Speaker) || Plugin.Config.FrameworkActive) return;
             if (Database.Access)
             {
                 msg.AccessRequested = "different";
                 return;
             }
-            else if (XivEngine.Instance.Database.Plugin.Config.OnlineRequests)
+            else if (Plugin.Config.OnlineRequests)
             {
                 msg.GetRequested = "different";
                 return;
             }
-            if (!this.Database.Plugin.Config.Reports) return;
+            if (!Plugin.Config.Reports) return;
             Plugin.PluginLog.Information("ReportDifferent");
             reports.Enqueue(new ReportXivMessage(msg, "different", ""));
         }
 
         public void ReportMuteToArc(XivMessage msg, string input)
         {
-            if (Database.Ignored.Contains(msg.Speaker) || Database.Plugin.Config.FrameworkActive) return;
+            if (Database.Ignored.Contains(msg.Speaker) || Plugin.Config.FrameworkActive) return;
             if (input.IsNullOrEmpty())
             {
                 this.Database.Plugin.PrintError("Report failed, you did not provide any context.");
@@ -1947,7 +1947,7 @@ namespace XivVoices.Engine
 
         public void ReportRedoToArc(XivMessage msg, string input)
         {
-            if (Database.Ignored.Contains(msg.Speaker) || Database.Plugin.Config.FrameworkActive) return;
+            if (Database.Ignored.Contains(msg.Speaker) || Plugin.Config.FrameworkActive) return;
             if (input.IsNullOrEmpty())
             {
                 this.Database.Plugin.PrintError("Report failed, you did not provide any context.");
@@ -1959,18 +1959,18 @@ namespace XivVoices.Engine
 
         public void ReportToArc(XivMessage msg)
         {
-            if (Database.Ignored.Contains(msg.Speaker) || Database.Plugin.Config.FrameworkActive) return;
+            if (Database.Ignored.Contains(msg.Speaker) || Plugin.Config.FrameworkActive) return;
             if (Database.Access)
             {
                 msg.AccessRequested = "missing";
                 return;
             }
-            else if (XivEngine.Instance.Database.Plugin.Config.OnlineRequests)
+            else if (Plugin.Config.OnlineRequests)
             {
                 msg.GetRequested = "missing";
                 return;
             }
-            if (!this.Database.Plugin.Config.Reports) return;
+            if (!Plugin.Config.Reports) return;
             reports.Enqueue(new ReportXivMessage(msg, "missing", ""));
         }
 
@@ -1978,12 +1978,12 @@ namespace XivVoices.Engine
         private readonly HttpClient client = new HttpClient();
         public async Task ReportToArcJSON(XivMessage xivMessage, string folder, string comment)
         {
-            if (!this.Database.Plugin.Config.Reports) return;
+            if (!Plugin.Config.Reports) return;
             await reportBlock.WaitAsync();
             try
             {
                 Plugin.PluginLog.Information($"Reporting line: \"{xivMessage.Sentence}\"");
-                string[] fullname = Database.Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+                string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
                 xivMessage.Sentence = xivMessage.TtsData.Message;
                 xivMessage.Sentence = xivMessage.Sentence.Replace(fullname[0], "_FIRSTNAME_");
                 if (fullname.Length > 1)
@@ -1997,7 +1997,7 @@ namespace XivVoices.Engine
                     if (reportedLines.Count > 100)
                         reportedLines.Dequeue();
 
-                    if (Database.Plugin.Config.AnnounceReports) this.Database.Plugin.Print($"Reporting line: \"{xivMessage.Sentence}\"");
+                    if (Plugin.Config.AnnounceReports) this.Database.Plugin.Print($"Reporting line: \"{xivMessage.Sentence}\"");
                     /*
                     try
                     {
@@ -2037,7 +2037,7 @@ namespace XivVoices.Engine
             {
                 if (!File.Exists(filePath)) return; // Ensure file still exists
                 string url = await File.ReadAllTextAsync(filePath);
-                if (!this.Database.Plugin.Config.Reports) return;
+                if (!Plugin.Config.Reports) return;
                 try
                 {
                     HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url);
