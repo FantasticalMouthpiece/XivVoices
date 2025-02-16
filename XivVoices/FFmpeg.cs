@@ -26,12 +26,16 @@ public class FFmpeg : IDisposable
       if (!isFFmpegWineProcessRunning)
       {
         StartFFmpegWineProcess();
-        await Task.Delay(500);
-        isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
-        if (!isFFmpegWineProcessRunning)
+
+        _ = Task.Run(async () =>
         {
-          PluginReference.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
-        }
+          await Task.Delay(500);
+          isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
+          if (!isFFmpegWineProcessRunning)
+          {
+            PluginReference?.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
+          }
+        });
       }
     }
   }
