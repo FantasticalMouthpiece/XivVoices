@@ -35,13 +35,38 @@ public class FFmpeg : IDisposable
     StopFFmpegWineProcess();
   }
 
+  // Doesn't actually get a WINE path but the XIV_Voices path within the winepath
+  private string GetWineXIVVPath()
+  {
+    string configDirectory = Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/");
+    bool isMac = configDirectory.Contains("Mac"); // because of 'XIV on Mac'
+
+    string baseDirectory = ""; // directory containing "wineprefix"
+    if (isMac)
+    {
+      // XIVonMac
+      baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", "");
+    }
+    else
+    {
+      // XIVLauncher
+      baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", "");
+    }
+
+    string xivvDirectory = baseDirectory += "/wineprefix/drive_c/XIV_Voices";
+    
+    // strip Z: or whatever drive may be used
+    xivvDirectory = xivvDirectory.Substring(2);
+
+    return xivvDirectory;
+  }
+
   public async Task ExecuteFFmpegCommand(string arguments)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
     if (Dalamud.Utility.Util.IsWine() && Plugin.Config.WineUseNativeFFmpeg)
     {
-      string xlcorePath = Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/").Replace("Z:/", "/").Replace("/pluginConfigs/XivVoices", "");
-      string _arguments = arguments.Replace("\\", "/").Replace(Plugin.Config.WorkingDirectory, $"{xlcorePath}/wineprefix/drive_c/XIV_Voices");
+      string _arguments = arguments.Replace("\\", "/").Replace(Plugin.Config.WorkingDirectory, GetWineXIVVPath());
       Plugin.PluginLog.Information($"ExecuteFFmpegCommand: {_arguments}");
       bool success = await SendFFmpegWineCommand($"ffmpeg {_arguments}");
       if (!success)
@@ -91,8 +116,10 @@ public class FFmpeg : IDisposable
     try {
       ffmpegWineProcess = new Process();
       ffmpegWineProcess.StartInfo.FileName = "/usr/bin/env";
-      ffmpegWineProcess.StartInfo.Arguments = $"bash {Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/").Replace("Z:/", "/")}";
-      Plugin.PluginLog.Information(ffmpegWineProcess.StartInfo.Arguments);
+      string ffmpegWineShPath = Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/");
+      ffmpegWineShPath = ffmpegWineShPath.Substring(2); // strip Z: or whatever drive may be used
+      ffmpegWineProcess.StartInfo.Arguments = $"bash \"{ffmpegWineShPath}\"";
+      Plugin.PluginLog.Information($"ffmpegWineProcess.StartInfo.Arguments: {ffmpegWineProcess.StartInfo.Arguments}");
       ffmpegWineProcess.StartInfo.UseShellExecute = false;
       ffmpegWineProcess.Start();
       _ = Task.Run(async () =>
