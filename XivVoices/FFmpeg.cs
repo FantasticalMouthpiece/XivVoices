@@ -13,6 +13,7 @@ public class FFmpeg : IDisposable
 
   public bool isFFmpegWineProcessRunning = false;
   private Process ffmpegWineProcess = null;
+  private static int FFmpegWineProcessPort = 1469;
 
   public FFmpeg()
   {
@@ -35,7 +36,7 @@ public class FFmpeg : IDisposable
     StopFFmpegWineProcess();
   }
 
-  // Doesn't actually get a WINE path but the XIV_Voices path within the winepath
+  // Doesn't actually get a WINE path but the XIV_Voices path within the winepath on the host
   private string GetWineXIVVPath()
   {
     string configDirectory = Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/");
@@ -93,7 +94,7 @@ public class FFmpeg : IDisposable
   {
     try
     {
-      using (TcpClient client = new TcpClient("127.0.0.1", 6914))
+      using (TcpClient client = new TcpClient("127.0.0.1", FFmpegWineProcessPort))
       using (NetworkStream stream = client.GetStream())
       using (StreamWriter writer = new StreamWriter(stream) { AutoFlush = true })
       using (StreamReader reader = new StreamReader(stream))
@@ -118,7 +119,7 @@ public class FFmpeg : IDisposable
       ffmpegWineProcess.StartInfo.FileName = "/usr/bin/env";
       string ffmpegWineShPath = Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/");
       ffmpegWineShPath = ffmpegWineShPath.Substring(2); // strip Z: or whatever drive may be used
-      ffmpegWineProcess.StartInfo.Arguments = $"bash \"{ffmpegWineShPath}\"";
+      ffmpegWineProcess.StartInfo.Arguments = $"bash \"{ffmpegWineShPath}\" {FFmpegWineProcessPort}";
       Plugin.PluginLog.Information($"ffmpegWineProcess.StartInfo.Arguments: {ffmpegWineProcess.StartInfo.Arguments}");
       ffmpegWineProcess.StartInfo.UseShellExecute = false;
       ffmpegWineProcess.Start();

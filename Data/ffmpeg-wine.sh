@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-PORT=6914
+PORT="$1"
 should_exit=0
+
+[[ -z "$PORT" ]] && should_exit=1
 
 is_port_in_use() {
   if netstat -tuln | grep -q ":$1 "; then
