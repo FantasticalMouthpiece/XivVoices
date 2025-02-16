@@ -1028,6 +1028,10 @@ public class PluginWindow : Window, IDisposable
                 ImGui.TextWrapped("If the FFmpeg daemon fails to start, check the following:");
                 ImGui.Indent(4 * ImGuiHelpers.GlobalScale);
                 ImGui.Bullet();
+                ImGui.TextWrapped("'/usr/bin/env' exists");
+                ImGui.Bullet();
+                ImGui.TextWrapped("bash is installed system-wide as 'bash'");
+                ImGui.Bullet();
                 ImGui.TextWrapped("ffmpeg is installed system-wide as 'ffmpeg'");
                 ImGui.Bullet();
                 ImGui.TextWrapped("netcat (BSD version) is installed system-wide as 'nc'");
