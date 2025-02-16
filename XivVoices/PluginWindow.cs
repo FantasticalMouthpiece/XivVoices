@@ -1051,8 +1051,18 @@ public class PluginWindow : Window, IDisposable
             {
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
-                
-                if (ImGui.CollapsingHeader("Version 0.3.3.0", ImGuiTreeNodeFlags.None))
+
+                if (ImGui.CollapsingHeader("Version 0.3.3.1", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("More settings window refactoring - might've fixed the settings crash");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added native ffmpeg support when using WINE. See '/xivv wine'. (Linux Only)");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added '/xivv [settings|dialogue|audio|logs|wine]' to open those settings tabs directly");
+                }
+
+            if (ImGui.CollapsingHeader("Version 0.3.3.0", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet();
                     ImGui.TextWrapped("Use Dalamud SDK instead of DalamudPackager");
