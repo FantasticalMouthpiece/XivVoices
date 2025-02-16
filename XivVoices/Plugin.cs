@@ -112,6 +112,8 @@ public class Plugin : IDalamudPlugin
 
     public static IPluginLog PluginLog { get; set; }
 
+    public static FFmpeg FFmpegger { get; set; }
+
     public Updater updater;
     public Database database;
     public Audio audio;
@@ -157,6 +159,9 @@ public class Plugin : IDalamudPlugin
             // Get or create a configuration object
             Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize();
+            FFmpegger = new FFmpeg();
+            FFmpegger.PluginReference = this;
+            FFmpegger.Initialize();
             //webSocketServer = new XIVVWebSocketServer(this.config, this);
             // Initialize the UI
             windowSystem = new WindowSystem(typeof(Plugin).AssemblyQualifiedName);
@@ -695,6 +700,41 @@ public class Plugin : IDalamudPlugin
         OpenConfig(command, args);
     }
 
+    private void PrintHelp()
+    {
+        string helpStr = "Xiv Voices Commands:\r\n" +
+            "on (Enable Xiv Voices)\r\n" +
+            "off (Disable Xiv Voices)\r\n" +
+            "mute (Mute/Unmute Volume)\r\n" +
+            "skip (Skips currently playing dialogue)\r\n" +
+            "volup (Increases volume by 10%)\r\n" +
+            "voldown (Decreases volume by 10%)\r\n" +
+            "settings (Opens the settings window)\r\n" +
+            "dialogue (Opens the dialogue settings tab)\r\n" +
+            "audio (Opens the audio settings tab)\r\n" +
+            "logs (Opens the audio logs tab)";
+
+        if (Dalamud.Utility.Util.IsWine())
+        {
+            helpStr += "\r\nwine (Opens the wine settings tab)";
+        }
+
+        Chat.Print(helpStr);
+    }
+
+    private void OpenConfigTab(string tab)
+    {
+        if (_window.currentTab == tab && _window.IsOpen)
+        {
+            _window.IsOpen = false;
+        }
+        else
+        {
+            _window.currentTab = tab;
+            _window.IsOpen = true;
+        }
+    }
+
     public void OpenConfig(string command, string args)
     {
         if (!disposed)
@@ -703,14 +743,11 @@ public class Plugin : IDalamudPlugin
             if (splitArgs.Length > 0)
                 switch (splitArgs[0].ToLower())
                 {
+                    case "":
+                        _window.Toggle();
+                        break;
                     case "help":
-                        Chat.Print("Xiv Voices Commands:\r\n" +
-                                   "on (Enable Xiv Voices)\r\n" +
-                                   "off (Disable Xiv Voices)\r\n" +
-                                   "mute (Mute/Unmute Volume)\r\n" +
-                                   "skip (Skips currently playing dialogue)\r\n" +
-                                   "volup (Increases volume by 10%)\r\n" +
-                                   "voldown (Decreases volume by 10%)");
+                        PrintHelp();
                         break;
                     case "on":
                         Config.Active = true;
@@ -733,7 +770,6 @@ public class Plugin : IDalamudPlugin
                             Config.Save();
                             Chat.Print("[XIVV] Unmuted");
                         }
-
                         break;
                     case "skip":
                         audio.StopAudio();
@@ -748,10 +784,28 @@ public class Plugin : IDalamudPlugin
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume - 10, 0, 100);
                         Config.Save();
                         break;
-                    default:
+                    case "settings":
                         _window.Toggle();
                         break;
-                }
+                    case "dialogue":
+                        OpenConfigTab("Dialogue Settings");
+                        break;
+                    case "audio":
+                        OpenConfigTab("Audio Settings");
+                        break;
+                    case "logs":
+                        OpenConfigTab("Audio Logs");
+                        break;
+                    case "wine":
+                        if (Dalamud.Utility.Util.IsWine())
+                        {
+                            OpenConfigTab("Wine Settings");
+                        }
+                        break;
+                    default:
+                        PrintHelp();
+                        break;
+            }
         }
     }
 
@@ -801,6 +855,7 @@ public class Plugin : IDalamudPlugin
             audio?.Dispose();
             xivEngine?.Dispose();
             _window.Dispose();
+            FFmpegger?.Dispose();
         }
         catch (Exception e)
         {

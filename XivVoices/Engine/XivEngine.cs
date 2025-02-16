@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Concentus.Structs;
 using Concentus.Oggfile;
-using Xabe.FFmpeg;
 using Newtonsoft.Json;
 using Dalamud.Utility;
 using NAudio.Wave;
@@ -1526,8 +1525,8 @@ namespace XivVoices.Engine
                     File.Delete(msg.FilePath + ".ogg");
                     string arguments = $"-i \"{msg.FilePath + ".mp3"}\" -c:a libopus \"{msg.FilePath + ".ogg"}\"";
                     string ffmpegDirectoryPath = Path.Combine(XivEngine.Instance.Database.ToolsPath); ;
-                    FFmpeg.SetExecutablesPath(ffmpegDirectoryPath);
-                    IConversion conversion = FFmpeg.Conversions.New().AddParameter(arguments);
+                    Xabe.FFmpeg.FFmpeg.SetExecutablesPath(ffmpegDirectoryPath);
+                    Xabe.FFmpeg.IConversion conversion = Xabe.FFmpeg.FFmpeg.Conversions.New().AddParameter(arguments);
                     await conversion.Start();
                     File.Delete(msg.FilePath + ".mp3");
                     msg.FilePath = msg.FilePath + ".ogg";
@@ -1629,11 +1628,7 @@ namespace XivVoices.Engine
             string filterArgs = SoundEffects(msg);
             string arguments = $"-i \"{msg.FilePath}\" -filter_complex \"{filterArgs}\" -c:a libopus \"{outputFilePath}\"";
 
-            string ffmpegDirectoryPath = Path.Combine(XivEngine.Instance.Database.ToolsPath); ;
-            FFmpeg.SetExecutablesPath(ffmpegDirectoryPath);
-
-            IConversion conversion = FFmpeg.Conversions.New().AddParameter(arguments);
-            await conversion.Start();
+            await Plugin.FFmpegger.ExecuteFFmpegCommand(arguments);
 
             // Read the Opus file
             using (FileStream fileStream = new FileStream(outputFilePath, FileMode.Open, FileAccess.Read))
