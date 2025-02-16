@@ -56,6 +56,10 @@ public class Configuration : IPluginConfiguration
     public bool FrameworkOnline { get; set; }
     public int Version { get; set; }
 
+    // Wine Settings
+    public bool WineUseNativeFFmpeg { get; set; } = true;
+
+    // Internal
     public bool ConfigMigrated { get; set; } = false;
 
     public void Initialize()

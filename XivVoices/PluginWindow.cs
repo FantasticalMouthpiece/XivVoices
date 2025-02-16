@@ -20,13 +20,14 @@ public class PluginWindow : Window, IDisposable
 {
     public Plugin PluginReference { get; internal set; }
 
-    private string currentTab = "General";
+    public string currentTab = "General";
     private string selectedDrive = string.Empty;
 
     private uint GeneralSettingsIconId = 1;
-    private uint DialogeSettingsIconId = 29;
+    private uint DialogueSettingsIconId = 29;
     private uint AudioSettingsIconId = 36;
     private uint AudioLogsIconId = 45;
+    private uint WineSettingsIconId = 24423;
     private uint ChangelogIconId = 47;
 
     public PluginWindow() : base("XIVV###XIVV")
@@ -110,9 +111,11 @@ public class PluginWindow : Window, IDisposable
           if (child)
           {
               DrawSidebarButton("General", GetImGuiHandleForIconId(GeneralSettingsIconId));
-              DrawSidebarButton("Dialogue Settings", GetImGuiHandleForIconId(DialogeSettingsIconId));
+              DrawSidebarButton("Dialogue Settings", GetImGuiHandleForIconId(DialogueSettingsIconId));
               DrawSidebarButton("Audio Settings", GetImGuiHandleForIconId(AudioSettingsIconId));
               DrawSidebarButton("Audio Logs", GetImGuiHandleForIconId(AudioLogsIconId));
+              if (Dalamud.Utility.Util.IsWine())
+                DrawSidebarButton("Wine Settings", GetImGuiHandleForIconId(WineSettingsIconId));
 
               // Draw the Discord Button
               // dalamud has this cached internally, just get it every frame duh
@@ -162,6 +165,8 @@ public class PluginWindow : Window, IDisposable
               AudioSettings();
           else if (currentTab == "Audio Logs")
               LogsSettings();
+          else if (currentTab == "Wine Settings")
+              WineSettings();
           else if (currentTab == "Changelog")
               Changelog();
       }
@@ -973,6 +978,67 @@ public class PluginWindow : Window, IDisposable
             }
 
             ImGui.Indent(8 * ImGuiHelpers.GlobalScale);
+        }
+    }
+
+    private void WineSettings()
+    {
+        if (!Dalamud.Utility.Util.IsWine())
+        {
+            ImGui.TextUnformatted("You are not using wine.");
+            return;
+        }
+
+        ImGui.Dummy(new Vector2(0, 10 * ImGuiHelpers.GlobalScale));
+        ImGui.TextWrapped("FFmpeg Settings");
+        ImGui.Dummy(new Vector2(0, 10 * ImGuiHelpers.GlobalScale));
+
+        var wineUseNativeFFmpeg = Plugin.Config.WineUseNativeFFmpeg;
+        if (ImGui.Checkbox("##wineUseNativeFFmpeg", ref wineUseNativeFFmpeg))
+        {
+            Plugin.Config.WineUseNativeFFmpeg = wineUseNativeFFmpeg;
+            Plugin.Config.Save();
+        }
+        ImGui.SameLine();
+        ImGui.Text("Use native FFmpeg");
+        ImGui.Indent(16 * ImGuiHelpers.GlobalScale);
+        ImGui.Bullet();
+        ImGui.TextWrapped("Increases speed and prevents lag spikes on voices with effects (e.g. Dragons) and when using a playback speed other than 100.");
+        ImGui.Unindent(16 * ImGuiHelpers.GlobalScale);
+        
+        ImGui.Dummy(new Vector2(0, 20 * ImGuiHelpers.GlobalScale));
+        if (wineUseNativeFFmpeg)
+        {
+            using (var child = ImRaii.Child("##wineFFmpegState", new Vector2(320 * ImGuiHelpers.GlobalScale, 55 * ImGuiHelpers.GlobalScale), true, ImGuiWindowFlags.NoScrollbar))
+            {
+                ImGui.TextWrapped($"FFmpeg daemon state: {(Plugin.FFmpegger.isFFmpegWineProcessRunning ? "Running" : "Stopped")}");
+                if (ImGui.Button("Start"))
+                {
+                    Plugin.FFmpegger.StartFFmpegWineProcess();
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Stop"))
+                {
+                    Plugin.FFmpegger.StopFFmpegWineProcess();
+                }
+            }
+
+            if (!Plugin.FFmpegger.isFFmpegWineProcessRunning)
+            {
+                ImGui.TextWrapped("If the FFmpeg daemon fails to start, check the following:");
+                ImGui.Indent(4 * ImGuiHelpers.GlobalScale);
+                ImGui.Bullet();
+                ImGui.TextWrapped("'/usr/bin/env' exists");
+                ImGui.Bullet();
+                ImGui.TextWrapped("bash is installed system-wide as 'bash'");
+                ImGui.Bullet();
+                ImGui.TextWrapped("ffmpeg is installed system-wide as 'ffmpeg'");
+                ImGui.Bullet();
+                ImGui.TextWrapped("netcat (BSD version) is installed system-wide as 'nc'");
+                ImGui.Bullet();
+                ImGui.TextWrapped("port 6914 is not in use");
+                ImGui.Unindent(4 * ImGuiHelpers.GlobalScale);
+            }
         }
     }
 
