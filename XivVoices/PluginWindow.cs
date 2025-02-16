@@ -1028,9 +1028,9 @@ public class PluginWindow : Window, IDisposable
                 ImGui.TextWrapped("If the FFmpeg daemon fails to start, check the following:");
                 ImGui.Indent(4 * ImGuiHelpers.GlobalScale);
                 ImGui.Bullet();
-                ImGui.TextWrapped("ffmpeg is installed system-wide");
+                ImGui.TextWrapped("ffmpeg is installed system-wide as 'ffmpeg'");
                 ImGui.Bullet();
-                ImGui.TextWrapped("netcat (BSD version) is installed system-wide");
+                ImGui.TextWrapped("netcat (BSD version) is installed system-wide as 'nc'");
                 ImGui.Bullet();
                 ImGui.TextWrapped("port 6914 is not in use");
                 ImGui.Unindent(4 * ImGuiHelpers.GlobalScale);
