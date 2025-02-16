@@ -26,16 +26,6 @@ public class FFmpeg : IDisposable
       if (!isFFmpegWineProcessRunning)
       {
         StartFFmpegWineProcess();
-
-        _ = Task.Run(async () =>
-        {
-          await Task.Delay(500);
-          isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
-          if (!isFFmpegWineProcessRunning)
-          {
-            PluginReference?.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
-          }
-        });
       }
     }
   }
@@ -102,8 +92,18 @@ public class FFmpeg : IDisposable
       ffmpegWineProcess = new Process();
       ffmpegWineProcess.StartInfo.FileName = "/usr/bin/env";
       ffmpegWineProcess.StartInfo.Arguments = $"bash {Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/").Replace("Z:/", "/")}";
+      Plugin.PluginLog.Information(ffmpegWineProcess.StartInfo.Arguments);
       ffmpegWineProcess.StartInfo.UseShellExecute = false;
       ffmpegWineProcess.Start();
+      _ = Task.Run(async () =>
+      {
+        await Task.Delay(500);
+        isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
+        if (!isFFmpegWineProcessRunning)
+        {
+          PluginReference?.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
+        }
+      });
     } catch (Exception ex) {
       Plugin.PluginLog.Error($"StartFFmpegWineProcess failed: {ex}");
       PluginReference.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
