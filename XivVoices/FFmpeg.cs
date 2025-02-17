@@ -24,9 +24,13 @@ public class FFmpeg : IDisposable
     if (Dalamud.Utility.Util.IsWine())
     {
       isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
-      if (!isFFmpegWineProcessRunning)
+      if (Plugin.Config.WineUseNativeFFmpeg)
       {
         StartFFmpegWineProcess();
+      }
+      else
+      {
+        StopFFmpegWineProcess();
       }
     }
   }

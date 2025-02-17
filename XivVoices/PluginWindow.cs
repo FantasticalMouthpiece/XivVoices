@@ -1002,6 +1002,14 @@ public class PluginWindow : Window, IDisposable
                 if (ImGui.Checkbox("##wineUseNativeFFmpeg", ref wineUseNativeFFmpeg))
                 {
                     Plugin.Config.WineUseNativeFFmpeg = wineUseNativeFFmpeg;
+                    if (wineUseNativeFFmpeg)
+                    {
+                      Plugin.FFmpegger.StartFFmpegWineProcess();
+                    }
+                    else
+                    {
+                      Plugin.FFmpegger.StopFFmpegWineProcess();
+                    }
                     Plugin.Config.Save();
                 }
                 ImGui.SameLine();
