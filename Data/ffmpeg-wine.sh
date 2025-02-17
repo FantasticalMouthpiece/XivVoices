@@ -2,7 +2,7 @@
 
 PORT="$1"
 should_exit=0
-[[ -z "$PORT" ]] && exit 1 # exit early, otherwise kill_orphaned_nc could kill other netcat processes
+[[ -z "$PORT" ]] && exit 1 # exit early, otherwise kill_orphaned_ncat could kill other netcat processes
 
 is_port_in_use() {
   PORT=$1
@@ -34,21 +34,21 @@ check_dependencies() {
   fi
 }
 
-kill_orphaned_nc() {
+kill_orphaned_ncat() {
   # ncat ocasionally gets orphaned, kill it if there aren't two
   # instances of ffmpeg-wine.sh (this one and another running nc)
   instances_of_ffmpeg_wine=$(pgrep -f "ffmpeg-wine.sh" | grep -v $$ | wc -l)
   if [[ $instances_of_ffmpeg_wine -ne 2 ]]; then
-    nc_pid=$(pgrep -f "ncat -4 -l 127.0.0.1 -p $PORT")
-    if [[ -n "$nc_pid" ]]; then
-      kill "$nc_pid" 2>/dev/null
+    ncat_pid=$(pgrep -f "ncat -4 -l 127.0.0.1 -p $PORT")
+    if [[ -n "$ncat_pid" ]]; then
+      kill "$ncat_pid" 2>/dev/null
     fi
   fi
 }
 
 main() {
   check_dependencies
-  kill_orphaned_nc
+  kill_orphaned_ncat
 
   echo "Starting daemon on port $PORT. Will exit immediately if any dependencies are unmet. There will be no logs from here on."
   while [[ $should_exit -eq 0 ]] ; do
