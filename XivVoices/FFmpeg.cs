@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Linq;
 using System.IO;
 using System;
 using XivVoices.Engine;
@@ -65,11 +66,13 @@ public class FFmpeg : IDisposable
           return;
         }
 
-        if (!currentValue.EndsWith("."))
+        string[] extensions = currentValue.Split(";", StringSplitOptions.RemoveEmptyEntries);
+
+        if (!extensions.Contains("."))
         {
-          string newValue = currentValue + ".";
+          string newValue = string.Join(";", extensions.Append("."));
           key.SetValue(valueName, newValue);
-          Plugin.PluginLog.Information("SetWineRegistry: successfully updates registry");
+          Plugin.PluginLog.Information("SetWineRegistry: successfully updated registry");
         }
         else
         {
