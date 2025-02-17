@@ -17,9 +17,13 @@ public class FFmpeg : IDisposable
   public bool isFFmpegWineProcessRunning = false;
   private Process ffmpegWineProcess = null;
   public int FFmpegWineProcessPort = 1469;
+  public bool IsWineDirty = false;
+  public string FFmpegWineScriptPath;
 
   public FFmpeg()
   {
+    string ffmpegWineScriptPath = Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/");
+    FFmpegWineScriptPath = ffmpegWineScriptPath.Substring(2); // strip Z: or whatever drive may be used
   }
 
   public async Task Initialize()
@@ -28,7 +32,7 @@ public class FFmpeg : IDisposable
     {
       SetWineRegistry();
 
-      isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
+      await RefreshFFmpegWineProcessState();
       if (Plugin.Config.WineUseNativeFFmpeg)
       {
         StartFFmpegWineProcess();
@@ -43,6 +47,11 @@ public class FFmpeg : IDisposable
   public void Dispose()
   {
     StopFFmpegWineProcess();
+  }
+
+  public async Task RefreshFFmpegWineProcessState()
+  {
+      isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
   }
 
   // https://gitlab.winehq.org/wine/wine/-/wikis/FAQ#how-do-i-launch-native-applications-from-a-windows-application
@@ -75,6 +84,8 @@ public class FFmpeg : IDisposable
           string newValue = string.Join(";", extensions.Append("."));
           key.SetValue(valueName, newValue);
           Plugin.PluginLog.Information("SetWineRegistry: successfully updated registry");
+          PluginReference.Chat.Print("[XIVV] Warning: ffmpeg-wine might require wine to fully restart for registry changes to take effect.");
+          IsWineDirty = true;
         }
         else
         {
@@ -176,16 +187,14 @@ public class FFmpeg : IDisposable
     try {
       ffmpegWineProcess = new Process();
       ffmpegWineProcess.StartInfo.FileName = "/usr/bin/env";
-      string ffmpegWineShPath = Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "ffmpeg-wine.sh").Replace("\\", "/");
-      ffmpegWineShPath = ffmpegWineShPath.Substring(2); // strip Z: or whatever drive may be used
-      ffmpegWineProcess.StartInfo.Arguments = $"bash \"{ffmpegWineShPath}\" {FFmpegWineProcessPort}";
+      ffmpegWineProcess.StartInfo.Arguments = $"bash \"{FFmpegWineScriptPath}\" {FFmpegWineProcessPort}";
       Plugin.PluginLog.Information($"ffmpegWineProcess.StartInfo.Arguments: {ffmpegWineProcess.StartInfo.Arguments}");
       ffmpegWineProcess.StartInfo.UseShellExecute = false;
       ffmpegWineProcess.Start();
       _ = Task.Run(async () =>
       {
         await Task.Delay(500);
-        isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
+        await RefreshFFmpegWineProcessState();
         if (!isFFmpegWineProcessRunning)
         {
           PluginReference?.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");

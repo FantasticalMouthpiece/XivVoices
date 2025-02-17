@@ -981,22 +981,12 @@ public class PluginWindow : Window, IDisposable
         }
     }
 
-    private string winecmdinput = "";
-
     private void WineSettings()
     {
         if (!Dalamud.Utility.Util.IsWine())
         {
             ImGui.TextUnformatted("You are not using wine.");
             return;
-        }
-
-        ImGui.InputTextWithHint("###command", "command", ref winecmdinput, 256, ImGuiInputTextFlags.None);
-
-        if (ImGui.Button("execute command"))
-        {
-          System.Diagnostics.Process.Start("/usr/bin/env", winecmdinput);
-          winecmdinput = "";
         }
 
         ImGui.Unindent(8 * ImGuiHelpers.GlobalScale);
@@ -1046,11 +1036,30 @@ public class PluginWindow : Window, IDisposable
                             {
                                 Plugin.FFmpegger.StopFFmpegWineProcess();
                             }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Refresh"))
+                            {
+                                Plugin.FFmpegger.RefreshFFmpegWineProcessState();
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Copy Start Command"))
+                            {
+                                ImGui.SetClipboardText($"/usr/bin/env bash \"{Plugin.FFmpegger.FFmpegWineScriptPath}\" {Plugin.FFmpegger.FFmpegWineProcessPort}");
+                            }
+
+                            if (ImGui.IsItemHovered())
+                                using (ImRaii.Tooltip())
+                                    ImGui.TextUnformatted("Copies the command to start the ffmpeg-wine daemon manually. Run this in your native linux/macos console.");
                         }
                     }
 
                     if (!Plugin.FFmpegger.isFFmpegWineProcessRunning)
                     {
+                        if (Plugin.FFmpegger.IsWineDirty)
+                        {
+                          ImGui.TextWrapped("Warning: ffmpeg-wine might require wine to fully restart for registry changes to take effect.");
+                          ImGui.Dummy(new Vector2(0, 20 * ImGuiHelpers.GlobalScale));
+                        }
                         using (var child2 = ImRaii.Child("##wineFFmpegTroubleshooting", new Vector2(345 * ImGuiHelpers.GlobalScale, 285 * ImGuiHelpers.GlobalScale), true, ImGuiWindowFlags.NoScrollbar))
                         {
                             if (child2)
@@ -1077,10 +1086,10 @@ public class PluginWindow : Window, IDisposable
                                 ImGui.Bullet();
                                 ImGui.TextWrapped("grep is installed system-wide as 'grep'");
                                 ImGui.Bullet();
-                                ImGui.TextWrapped("ncat (not netcat or nc) is installed system-wide as 'ncat'");
+                                ImGui.TextWrapped("ncat is installed system-wide as 'ncat'");
                                 ImGui.Indent(16 * ImGuiHelpers.GlobalScale);
                                 ImGui.Bullet();
-                                ImGui.TextWrapped("If 'nc -h' mentions GNU, you have an incompatible version installed");
+                                ImGui.TextWrapped("Not 'netcat' nor 'nc'. ncat is usually part of the 'nmap' package");
                                 ImGui.Unindent(16 * ImGuiHelpers.GlobalScale);
                                 ImGui.Bullet();
                                 ImGui.TextWrapped("wc is installed system-wide as 'wc'");
