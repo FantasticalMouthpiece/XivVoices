@@ -58,7 +58,7 @@ public class FFmpeg : IDisposable
           return;
         }
 
-        string currentValue = key.GetValue(valuename) as string;
+        string currentValue = key.GetValue(valueName) as string;
         if (currentValue == null)
         {
           Plugin.PluginLog.Error($"Error in SetWineRegistry: PATHEXT value not found.");
