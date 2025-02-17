@@ -13,7 +13,7 @@ public class FFmpeg : IDisposable
 
   public bool isFFmpegWineProcessRunning = false;
   private Process ffmpegWineProcess = null;
-  private static int FFmpegWineProcessPort = 1469;
+  private int FFmpegWineProcessPort = 1469;
 
   public FFmpeg()
   {
@@ -41,24 +41,11 @@ public class FFmpeg : IDisposable
   {
     string configDirectory = Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/");
     bool isMac = configDirectory.Contains("Mac"); // because of 'XIV on Mac'
-
     string baseDirectory = ""; // directory containing "wineprefix"
-    if (isMac)
-    {
-      // XIVonMac
-      baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", "");
-    }
-    else
-    {
-      // XIVLauncher
-      baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", "");
-    }
-
-    string xivvDirectory = baseDirectory += "/wineprefix/drive_c/XIV_Voices";
-    
-    // strip Z: or whatever drive may be used
-    xivvDirectory = xivvDirectory.Substring(2);
-
+    if (isMac) baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", ""); // XIVonMac
+    else baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", ""); // XIVLauncher
+    string xivvDirectory = baseDirectory += "/wineprefix/drive_c/XIV_Voices"; // seems to always be this
+    xivvDirectory = xivvDirectory.Substring(2); // strip Z: or whatever drive may be used
     return xivvDirectory;
   }
 
@@ -82,7 +69,7 @@ public class FFmpeg : IDisposable
     Plugin.PluginLog.Information($"ExecuteFFmpegCommand took {stopwatch.ElapsedMilliseconds} ms.");
   }
 
-  private static async Task ExecuteFFmpegCommandWindows(string arguments)
+  private async Task ExecuteFFmpegCommandWindows(string arguments)
   {
     string ffmpegDirectoryPath = Path.Combine(XivEngine.Instance.Database.ToolsPath);
     Xabe.FFmpeg.FFmpeg.SetExecutablesPath(ffmpegDirectoryPath);
@@ -90,7 +77,7 @@ public class FFmpeg : IDisposable
     await conversion.Start();
   }
 
-  private static async Task<bool> SendFFmpegWineCommand(string command)
+  private async Task<bool> SendFFmpegWineCommand(string command)
   {
     try
     {

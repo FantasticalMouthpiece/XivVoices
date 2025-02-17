@@ -2,22 +2,32 @@
 
 PORT="$1"
 should_exit=0
-
 [[ -z "$PORT" ]] && should_exit=1
 
 is_port_in_use() {
-  if netstat -tuln | grep -q ":$1 "; then
-    return 0
-  elif ss -tuln | grep -q ":$1 "; then
-    return 0
+  PORT=$1
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    if netstat -an | grep -q "LISTEN" | grep -q ":$PORT "; then
+      return 0
+    fi
   else
-    return 1
+    if ss -tuln | grep -q ":$PORT "; then
+      return 0
+    fi
   fi
+  return 1
 }
 
 check_dependencies() {
+  # while most of these commands should be preinstalled on any sane distro,
+  # there exists nixos/arch where the users can be... well, users.
+  command -v netstat >/dev/null 2>&1 || command -v ss >/dev/null 2>&1 || should_exit=1
   command -v ffmpeg >/dev/null 2>&1 || should_exit=1
+  command -v pgrep >/dev/null 2>&1 || should_exit=1
+  command -v grep >/dev/null 2>&1 || should_exit=1
+  command -v kill >/dev/null 2>&1 || should_exit=1
   command -v nc >/dev/null 2>&1 || should_exit=1
+  command -v wc >/dev/null 2>&1 || should_exit=1
 
   # We don't support GNU netcat
   if nc -h 2>&1 | grep -q "GNU"; then
@@ -28,7 +38,18 @@ check_dependencies() {
     should_exit=1
   fi
 }
-check_dependencies
+
+kill_orphaned_nc() {
+  # nc ocasionally gets orphaned, kill it if there aren't two
+  # instances of ffmpeg-wine.sh (this one and another running nc)
+  instances_of_ffmpeg_wine=$(pgrep -f "ffmpeg-wine.sh" | grep -v $$ | wc -l)
+  if [[ $instances_of_ffmpeg_wine -ne 2 ]]; then
+    nc_pid=$(pgrep -f "nc -l 127.0.0.1 $PORT")
+    if [[ -n "$nc_pid" ]]; then
+      kill "$nc_pid" 2>/dev/null
+    fi
+  fi
+}
 
 run_command() {
   local cmd="$1"
@@ -43,11 +64,18 @@ run_command() {
   fi
 }
 
-while [[ $should_exit -eq 0 ]] ; do
-  { 
-    read -r cmd
-    if [[ -n "$cmd" ]]; then
-      run_command "$cmd"
-    fi
-  } < <(nc -l 127.0.0.1 $PORT)
-done
+main() {
+  check_dependencies
+  kill_orphaned_nc
+
+  while [[ $should_exit -eq 0 ]] ; do
+    { 
+      read -r cmd
+      if [[ -n "$cmd" ]]; then
+        run_command "$cmd"
+      fi
+    } < <(nc -l 127.0.0.1 $PORT)
+  done
+}
+
+main
