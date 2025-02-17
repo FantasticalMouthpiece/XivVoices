@@ -1067,8 +1067,6 @@ public class PluginWindow : Window, IDisposable
                                 ImGui.Bullet();
                                 ImGui.TextWrapped("grep is installed system-wide as 'grep'");
                                 ImGui.Bullet();
-                                ImGui.TextWrapped("kill is installed system-wide as 'kill'");
-                                ImGui.Bullet();
                                 ImGui.TextWrapped("netcat (BSD version) is installed system-wide as 'nc'");
                                 ImGui.Indent(16 * ImGuiHelpers.GlobalScale);
                                 ImGui.Bullet();

@@ -25,7 +25,6 @@ check_dependencies() {
   command -v ffmpeg >/dev/null 2>&1 || should_exit=1
   command -v pgrep >/dev/null 2>&1 || should_exit=1
   command -v grep >/dev/null 2>&1 || should_exit=1
-  command -v kill >/dev/null 2>&1 || should_exit=1
   command -v nc >/dev/null 2>&1 || should_exit=1
   command -v wc >/dev/null 2>&1 || should_exit=1
 
