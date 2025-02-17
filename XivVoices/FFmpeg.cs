@@ -13,7 +13,7 @@ public class FFmpeg : IDisposable
 
   public bool isFFmpegWineProcessRunning = false;
   private Process ffmpegWineProcess = null;
-  private int FFmpegWineProcessPort = 1469;
+  public int FFmpegWineProcessPort = 1469;
 
   public FFmpeg()
   {
@@ -36,11 +36,16 @@ public class FFmpeg : IDisposable
     StopFFmpegWineProcess();
   }
 
+  public bool IsMac()
+  {
+    return Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/").Contains("Mac");  // because of 'XIV on Mac'
+  }
+
   // Doesn't actually get a WINE path but the XIV_Voices path within the winepath on the host
   private string GetWineXIVVPath()
   {
     string configDirectory = Plugin.Interface.ConfigDirectory.ToString().Replace("\\", "/");
-    bool isMac = configDirectory.Contains("Mac"); // because of 'XIV on Mac'
+    bool isMac = IsMac();
     string baseDirectory = ""; // directory containing "wineprefix"
     if (isMac) baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", ""); // XIVonMac
     else baseDirectory = configDirectory.Replace("/pluginConfigs/XivVoices", ""); // XIVLauncher
