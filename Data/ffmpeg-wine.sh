@@ -2,7 +2,7 @@
 
 PORT="$1"
 should_exit=0
-[[ -z "$PORT" ]] && should_exit=1
+[[ -z "$PORT" ]] && exit 1 # exit early, otherwise kill_orphaned_nc could kill other netcat processes
 
 is_port_in_use() {
   PORT=$1

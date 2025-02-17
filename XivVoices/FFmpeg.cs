@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.IO;
 using System;
 using XivVoices.Engine;
+using Microsoft.Win32;
 
 namespace XivVoices;
 
@@ -23,6 +24,8 @@ public class FFmpeg : IDisposable
   {
     if (Dalamud.Utility.Util.IsWine())
     {
+      SetWineRegistry();
+
       isFFmpegWineProcessRunning = await SendFFmpegWineCommand("");
       if (Plugin.Config.WineUseNativeFFmpeg)
       {
@@ -38,6 +41,46 @@ public class FFmpeg : IDisposable
   public void Dispose()
   {
     StopFFmpegWineProcess();
+  }
+
+  private void SetWineRegistry()
+  {
+    string regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+    string valueName = "PATHEXT";
+
+    try
+    {
+      using (RegistryKey key = Registry.LocalMachine.OpenSubKey(regPath, writable: true))
+      {
+        if (key == null)
+        {
+          Plugin.PluginLog.Error($"Error in SetWineRegistry: key is null");
+          return;
+        }
+
+        string currentValue = key.GetValue(valuename) as string;
+        if (currentValue == null)
+        {
+          Plugin.PluginLog.Error($"Error in SetWineRegistry: PATHEXT value not found.");
+          return;
+        }
+
+        if (!currentValue.EndsWith("."))
+        {
+          string newValue = currentValue + ".";
+          key.SetValue(valueName, newValue);
+          Plugin.PluginLog.Information("SetWineRegistry: successfully updates registry");
+        }
+        else
+        {
+          Plugin.PluginLog.Information("SetWineRegistry: registry already updated");
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      Plugin.PluginLog.Error($"Error in SetWineRegistry: {ex}");
+    }
   }
 
   public bool IsMac()
