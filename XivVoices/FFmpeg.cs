@@ -145,14 +145,19 @@ public class FFmpeg : IDisposable
         using (StreamWriter writer = new StreamWriter(stream) { AutoFlush = true })
         using (StreamReader reader = new StreamReader(stream))
         {
-          var writeTask = writer.WriteLineAsync($"{command}\n");
+          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.WriteLineAsync()");
+          await writer.WriteLineAsync($"{command}\n");
+          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.Flush()");
           writer.Flush();
+          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.ReadLineAsync()");
           var readTask = reader.ReadLineAsync();
 
-          var completedTask = await Task.WhenAny(writeTask, readTask, Task.Delay(Timeout.Infinite, cts.Token));
-          if (completedTask == writeTask || completedTask == readTask)
+          var completedTask = await Task.WhenAny(readTask, Task.Delay(Timeout.Infinite, cts.Token));
+          if (completedTask == readTask)
           {
-            await Task.WhenAll(writeTask, readTask);
+            Plugin.PluginLog.Information("SendFFmpegWineCommand: await readTask");
+            await readTask;
+            Plugin.PluginLog.Information("SendFFmpegWineCommand: yippie!!");
             return true;
           }
           else
