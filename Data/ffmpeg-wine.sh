@@ -80,7 +80,7 @@ main() {
         run_command "$cmd"
       fi
       echo "Connection closed"
-    } < <(nc -l 127.0.0.1 $PORT)
+    } < <(nc -N -l 127.0.0.1 $PORT)
   done
 }
 

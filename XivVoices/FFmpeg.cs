@@ -145,19 +145,13 @@ public class FFmpeg : IDisposable
         using (StreamWriter writer = new StreamWriter(stream) { AutoFlush = true })
         using (StreamReader reader = new StreamReader(stream))
         {
-          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.WriteLineAsync()");
           await writer.WriteLineAsync($"{command}\n");
-          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.Flush()");
-          writer.Flush();
-          Plugin.PluginLog.Information("SendFFmpegWineCommand: writer.ReadLineAsync()");
           var readTask = reader.ReadLineAsync();
 
           var completedTask = await Task.WhenAny(readTask, Task.Delay(Timeout.Infinite, cts.Token));
           if (completedTask == readTask)
           {
-            Plugin.PluginLog.Information("SendFFmpegWineCommand: await readTask");
             await readTask;
-            Plugin.PluginLog.Information("SendFFmpegWineCommand: yippie!!");
             return true;
           }
           else
@@ -169,7 +163,7 @@ public class FFmpeg : IDisposable
       }
       catch (Exception ex)
       {
-        Plugin.PluginLog.Error($"SendFFmpegWineCommand error: {ex}");
+        Plugin.PluginLog.Debug($"SendFFmpegWineCommand error: {ex}");
         return false;
       }
     }
