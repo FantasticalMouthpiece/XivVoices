@@ -79,7 +79,7 @@ main() {
       if [[ -n "$cmd" ]]; then
         run_command "$cmd"
       fi
-      echo "Connection closed";
+      echo "Connection closed"
     } < <(nc -l 127.0.0.1 $PORT)
   done
 }
