@@ -44,6 +44,7 @@ public class FFmpeg : IDisposable
     StopFFmpegWineProcess();
   }
 
+  // https://gitlab.winehq.org/wine/wine/-/wikis/FAQ#how-do-i-launch-native-applications-from-a-windows-application
   private void SetWineRegistry()
   {
     string regPath = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";

@@ -28,12 +28,13 @@ check_dependencies() {
   command -v nc >/dev/null 2>&1 || should_exit=1
   command -v wc >/dev/null 2>&1 || should_exit=1
 
-  # We don't support GNU netcat
   if nc -h 2>&1 | grep -q "GNU"; then
+    echo "We don't support GNU netcat"
     should_exit=1
   fi
 
   if is_port_in_use $PORT; then
+    echo "Port $PORT is already in use"
     should_exit=1
   fi
 }
@@ -52,13 +53,16 @@ kill_orphaned_nc() {
 
 run_command() {
   local cmd="$1"
+  echo "Received command: '$cmd'"
 
   if [[ "$cmd" == "exit" ]]; then
+    echo "Exiting..."
     should_exit=1
     return
   fi
 
   if [[ "$cmd" =~ ^ffmpeg[[:space:]] ]]; then
+    echo "Executing command: '$cmd'"
     eval "$cmd" > /dev/null 2>&1
   fi
 }
@@ -67,12 +71,15 @@ main() {
   check_dependencies
   kill_orphaned_nc
 
+  echo "Starting daemon on port $PORT. Will exit immediately if any dependencies are unmet."
   while [[ $should_exit -eq 0 ]] ; do
-    { 
+    {
       read -r cmd
+      echo "New connection opened"
       if [[ -n "$cmd" ]]; then
         run_command "$cmd"
       fi
+      echo "Connection closed";
     } < <(nc -l 127.0.0.1 $PORT)
   done
 }

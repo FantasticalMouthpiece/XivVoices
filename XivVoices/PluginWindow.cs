@@ -981,12 +981,22 @@ public class PluginWindow : Window, IDisposable
         }
     }
 
+    private string winecmdinput = "";
+
     private void WineSettings()
     {
         if (!Dalamud.Utility.Util.IsWine())
         {
             ImGui.TextUnformatted("You are not using wine.");
             return;
+        }
+
+        ImGui.InputTextWithHint("###command", "command", ref winecmdinput, 256, ImGuiInputTextFlags.None);
+
+        if (ImGui.Button("execute command"))
+        {
+          System.Diagnostics.Process.Start("/usr/bin/env", winecmdinput);
+          winecmdinput = "";
         }
 
         ImGui.Unindent(8 * ImGuiHelpers.GlobalScale);
