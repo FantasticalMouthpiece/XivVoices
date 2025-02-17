@@ -135,21 +135,37 @@ public class FFmpeg : IDisposable
 
   private async Task<bool> SendFFmpegWineCommand(string command)
   {
-    try
+    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
     {
-      using (TcpClient client = new TcpClient("127.0.0.1", FFmpegWineProcessPort))
-      using (NetworkStream stream = client.GetStream())
-      using (StreamWriter writer = new StreamWriter(stream) { AutoFlush = true })
-      using (StreamReader reader = new StreamReader(stream))
+      try
       {
-        await writer.WriteLineAsync($"{command}\n");
-        await reader.ReadLineAsync();
-        return true;
+        using (TcpClient client = new TcpClient("127.0.0.1", FFmpegWineProcessPort))
+        using (NetworkStream stream = client.GetStream())
+        using (StreamWriter writer = new StreamWriter(stream) { AutoFlush = true })
+        using (StreamReader reader = new StreamReader(stream))
+        {
+          var writeTask = writer.WriteLineAsync($"{command}\n");
+          writer.Flush();
+          var readTask = reader.ReadLineAsync();
+
+          var completedTask = await Task.WhenAny(writeTask, readTask, Task.Delay(Timeout.Infinite, cts.Token));
+          if (completedTask == writeTask || completedTask == readTask)
+          {
+            await Task.WhenAll(writeTask, readTask);
+            return true;
+          }
+          else
+          {
+            Plugin.PluginLog.Error($"SendFFmpegWineCommand timed out after 5 seconds");
+            return false;
+          }
+        }
       }
-    }
-    catch (Exception ex)
-    {
-      return false;
+      catch (Exception ex)
+      {
+        Plugin.PluginLog.Error($"SendFFmpegWineCommand error: {ex}");
+        return false;
+      }
     }
   }
 
