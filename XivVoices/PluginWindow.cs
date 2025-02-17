@@ -1077,7 +1077,7 @@ public class PluginWindow : Window, IDisposable
                                 ImGui.Bullet();
                                 ImGui.TextWrapped("grep is installed system-wide as 'grep'");
                                 ImGui.Bullet();
-                                ImGui.TextWrapped("netcat (BSD version) is installed system-wide as 'nc'");
+                                ImGui.TextWrapped("ncat (not netcat or nc) is installed system-wide as 'ncat'");
                                 ImGui.Indent(16 * ImGuiHelpers.GlobalScale);
                                 ImGui.Bullet();
                                 ImGui.TextWrapped("If 'nc -h' mentions GNU, you have an incompatible version installed");
