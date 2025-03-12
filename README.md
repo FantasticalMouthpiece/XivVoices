@@ -12,7 +12,7 @@
 
 Issues? Kudos? Wanna just hang with fellow FFXIV Story enjoyers?
 
-![Join us on Discord](https://discord.com/channels/1308121966485700689/1312880170285138041/1349162711266889738)
+[Join us on Discord!](https://discord.gg/jX2vxDRkyq)
 
 ### Key Features:
 
