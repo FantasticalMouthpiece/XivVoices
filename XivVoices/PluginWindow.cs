@@ -1044,7 +1044,7 @@ public class PluginWindow : Window, IDisposable
                             ImGui.SameLine();
                             if (ImGui.Button("Copy Start Command"))
                             {
-                                ImGui.SetClipboardText($"/usr/bin/env bash \"{Plugin.FFmpegger.FFmpegWineScriptPath}\" {Plugin.FFmpegger.FFmpegWineProcessPort}");
+                                ImGui.SetClipboardText($"/usr/bin/env bash -c 'nohup /usr/bin/env bash \"{Plugin.FFmpegger.FFmpegWineScriptPath}\" {Plugin.FFmpegger.FFmpegWineProcessPort} >/dev/null 2>&1' &");
                             }
 
                             if (ImGui.IsItemHovered())

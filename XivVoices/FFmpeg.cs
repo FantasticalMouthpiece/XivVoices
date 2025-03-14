@@ -132,6 +132,7 @@ public class FFmpeg : IDisposable
       }
     } else {
       await ExecuteFFmpegCommandWindows(arguments);
+      isFFmpegWineProcessRunning = false;
     }
     stopwatch.Stop();
     Plugin.PluginLog.Information($"ExecuteFFmpegCommand took {stopwatch.ElapsedMilliseconds} ms.");
