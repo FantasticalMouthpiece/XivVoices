@@ -1,3 +1,6 @@
+# Windows line endings to NOT work on linux, do NOT let git fuck with this.
+Data/ffmpeg-wine.sh eol=lf
+
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
