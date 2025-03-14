@@ -129,10 +129,10 @@ public class FFmpeg : IDisposable
       {
         PluginReference.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
         await ExecuteFFmpegCommandWindows(arguments);
+        isFFmpegWineProcessRunning = false;
       }
     } else {
       await ExecuteFFmpegCommandWindows(arguments);
-      isFFmpegWineProcessRunning = false;
     }
     stopwatch.Stop();
     Plugin.PluginLog.Information($"ExecuteFFmpegCommand took {stopwatch.ElapsedMilliseconds} ms.");
