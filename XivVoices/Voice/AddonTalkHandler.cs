@@ -1,4 +1,4 @@
-﻿using Anamnesis.GameData.Excel;
+﻿﻿using Anamnesis.GameData.Excel;
 using Anamnesis.Memory;
 using Anamnesis.Services;
 using Dalamud.Game;
@@ -69,6 +69,13 @@ namespace XivVoices.Voice {
 
         public ConditionalWeakTable<ActorMemory, UserAnimationOverride> UserAnimationOverrides { get; private set; } = new();
         public bool TextIsPresent { get => _textIsPresent; set => _textIsPresent = value; }
+
+        private unsafe bool IsBoundByDuty { get => Conditions.Instance()->BoundByDuty; }
+        private unsafe bool IsWatchingCutscene { get => Conditions.Instance()->WatchingCutscene; }
+        private unsafe bool IsOccupiedInEvent { get => Conditions.Instance()->OccupiedInEvent; }
+        private unsafe bool IsOccupiedInQuestEvent { get => Conditions.Instance()->OccupiedInQuestEvent; }
+        private unsafe bool IsOccupiedInCutSceneEvent { get => Conditions.Instance()->OccupiedInCutSceneEvent; }
+        private unsafe bool IsWatchingCutscene78 { get => Conditions.Instance()->WatchingCutscene78; }
 
         public AddonTalkHandler(AddonTalkManager addonTalkManager, IFramework framework, IObjectTable objects,
             IClientState clientState, Plugin plugin, IChatGui chatGui, ISigScanner sigScanner) {
@@ -167,15 +174,15 @@ namespace XivVoices.Voice {
 
         
         private void _chatGui_ChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
-            if (Plugin.Config.Active && _clientState.IsLoggedIn && bubbleCooldown.ElapsedMilliseconds >= 200 && Conditions.IsBoundByDuty) {
+            if (Plugin.Config.Active && _clientState.IsLoggedIn && bubbleCooldown.ElapsedMilliseconds >= 200 && IsBoundByDuty) {
                 if (_state == null) {
                     try
                     {
                         switch (type) {
                             case XivChatType.NPCDialogueAnnouncements:
-                                if (message.TextValue != _lastText && !Conditions.IsWatchingCutscene && !_blockAudioGeneration) {
+                                if (message.TextValue != _lastText && !IsWatchingCutscene && !_blockAudioGeneration) {
                                     _lastText = message.TextValue;
-                                    NPCText(sender.TextValue, message.TextValue.TrimStart('.'), true, !Conditions.IsBoundByDuty);
+                                    NPCText(sender.TextValue, message.TextValue.TrimStart('.'), true, !IsBoundByDuty);
 #if DEBUG
                                     _plugin.Chat.Print("Sent audio from NPC chat.");
 #endif
@@ -198,7 +205,7 @@ namespace XivVoices.Voice {
         {
             if (Plugin.Config.Active)
             try {
-                if (_clientState.IsLoggedIn && !Conditions.IsWatchingCutscene && !Conditions.IsWatchingCutscene78) {
+                if (_clientState.IsLoggedIn && !IsWatchingCutscene && !IsWatchingCutscene78) {
                     if (pString != IntPtr.Zero &&
                     !Service.ClientState.IsPvPExcludingDen) {
                         if (pActor == null || (ObjectKind)pActor->GetObjectKind() != ObjectKind.Player) {
@@ -229,24 +236,24 @@ namespace XivVoices.Voice {
                                                     speakerName.TextValue +
                                                     character->BaseId;
                                             ICharacter characterObject = GetCharacterFromId(character->GameObject.EntityId);
-                                            string finalName = characterObject != null && !string.IsNullOrEmpty(characterObject.Name.TextValue) && Conditions.IsBoundByDuty ? characterObject.Name.TextValue : nameID;
+                                            string finalName = characterObject != null && !string.IsNullOrEmpty(characterObject.Name.TextValue) && IsBoundByDuty ? characterObject.Name.TextValue : nameID;
                                             if (npcBubbleInformaton.MessageText.TextValue != _lastText) {
 
                                                 string id = character->BaseId.ToString();
                                                 string skeleton = character->ModelContainer.ModelSkeletonId.ToString();
                                                 
 
-                                                if (Plugin.Config.BubblesEverywhere && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                if (Plugin.Config.BubblesEverywhere && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
                                                 }
-                                                else if (Conditions.IsBoundByDuty && Plugin.Config.BubblesInBattleZones && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                else if (IsBoundByDuty && Plugin.Config.BubblesInBattleZones && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
                                                 }
-                                                else if (!Conditions.IsBoundByDuty && Plugin.Config.BubblesInSafeZones && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                else if (!IsBoundByDuty && Plugin.Config.BubblesInSafeZones && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
@@ -440,7 +447,7 @@ namespace XivVoices.Voice {
         public async void TriggerLipSync(ICharacter character, string length, bool forceAnim = false, ushort anim = 0)
         {
             
-            if (Conditions.IsBoundByDuty && !Conditions.IsWatchingCutscene) return;
+            if (IsBoundByDuty && !IsWatchingCutscene) return;
             if (!Plugin.Config.Active) return;
 
             ActorMemory actorMemory = null;
@@ -655,7 +662,7 @@ namespace XivVoices.Voice {
         public async void StopLipSync(ICharacter character)
         {
             
-            if (Conditions.IsBoundByDuty && !Conditions.IsWatchingCutscene) return;
+            if (IsBoundByDuty && !IsWatchingCutscene) return;
             if (!Plugin.Config.Active) return;
             if (character == null) return;
 
