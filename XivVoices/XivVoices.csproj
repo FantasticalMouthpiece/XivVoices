@@ -1,7 +1,6 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/12.0.0">
+﻿<Project Sdk="Dalamud.NET.Sdk/12.0.1">
 
     <PropertyGroup>
-        <TargetFramework>net9.0-windows</TargetFramework>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <PackageProjectUrl>https://github.com/FantasticalMouthpiece/XivVoices</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
