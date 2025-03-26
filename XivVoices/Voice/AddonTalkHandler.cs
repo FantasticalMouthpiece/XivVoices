@@ -77,6 +77,11 @@ namespace XivVoices.Voice {
         private unsafe bool IsOccupiedInCutSceneEvent { get => Conditions.Instance()->OccupiedInCutSceneEvent; }
         private unsafe bool IsWatchingCutscene78 { get => Conditions.Instance()->WatchingCutscene78; }
 
+        // ActionTimeline exd sheet
+        private ushort SpeakNormalLong = 631;
+        private ushort SpeakNormalMiddle = 630;
+        private ushort SpeakNormalShort = 629;
+
         public AddonTalkHandler(AddonTalkManager addonTalkManager, IFramework framework, IObjectTable objects,
             IClientState clientState, Plugin plugin, IChatGui chatGui, ISigScanner sigScanner) {
             try
@@ -500,12 +505,11 @@ namespace XivVoices.Voice {
                             await Task.Delay(100, token);
 
                             // 4-Second Lips Movement Animation
-                            ushort speak_normal_long = 631;
                             if(!token.IsCancellationRequested && mouthMovement[6] > 0 && character != null && actorMemory != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = forceAnim? anim : speak_normal_long;
+                                animationMemory.LipsOverride = forceAnim? anim : SpeakNormalLong;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : speak_normal_long, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : SpeakNormalLong, "Lipsync");
 
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[6] * 4000, 6);
 #if DEBUG
@@ -530,12 +534,11 @@ namespace XivVoices.Voice {
                             }
 
                             // 2-Second Lips Movement Animation
-                            ushort speak_normal_middle = 630;
                             if (!token.IsCancellationRequested && mouthMovement[5] > 0 && character != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = forceAnim ? anim : speak_normal_middle;
+                                animationMemory.LipsOverride = forceAnim ? anim : SpeakNormalMiddle;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : speak_normal_middle, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : SpeakNormalMiddle, "Lipsync");
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[5] * 2000, 5);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[5] durationMs[{mouthMovement[5] * 2}] delay [{adjustedDelay}]");
@@ -558,12 +561,11 @@ namespace XivVoices.Voice {
                             }
 
                             // 1-Second Lips Movement Animation
-                            ushort speak_normal_short = 629;
                             if (!token.IsCancellationRequested && mouthMovement[4] > 0 && character != null && actorMemory != null)
                             {
-                                animationMemory.LipsOverride = forceAnim ? anim : speak_normal_short;
+                                animationMemory.LipsOverride = forceAnim ? anim : SpeakNormalShort;
                                 MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : speak_normal_short, "Lipsync");
+                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : SpeakNormalShort, "Lipsync");
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[4]*1000, 4);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[4] durationMs[{mouthMovement[4]}] delay [{adjustedDelay}]");
@@ -696,7 +698,7 @@ namespace XivVoices.Voice {
                 var actorMemory = new ActorMemory();
                 actorMemory.SetAddress(character.Address);
                 var animationMemory = actorMemory.Animation;
-                animationMemory.LipsOverride = 630; // LipSyncTypes[5].Timeline.AnimationId
+                animationMemory.LipsOverride = SpeakNormalShort;
                 MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
             }
             catch (Exception ex)
