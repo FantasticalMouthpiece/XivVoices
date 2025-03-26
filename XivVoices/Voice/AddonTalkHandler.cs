@@ -1,6 +1,9 @@
-﻿﻿using Anamnesis.GameData.Excel;
+﻿﻿#if !DISABLE_ANAMNESIS
+using Anamnesis.GameData.Excel;
 using Anamnesis.Memory;
 using Anamnesis.Services;
+#endif
+
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text.SeStringHandling;
@@ -51,9 +54,13 @@ namespace XivVoices.Voice {
         // private readonly Object _speechBubbleInfoLockObj = new();
         //private readonly Object mGameChatInfoLockObj = new();
 
+#if !DISABLE_ANAMNESIS
         private MemoryService _memoryService;
         private AnimationService _animationService;
         private GameDataService _gameDataService;
+        public ConditionalWeakTable<ActorMemory, UserAnimationOverride> UserAnimationOverrides { get; private set; } = new();
+#endif
+
         private List<Dalamud.Game.ClientState.Objects.Types.IGameObject> _threadSafeObjectTable;
         public List<ActionTimeline> LipSyncTypes { get; private set; }
 
@@ -67,7 +74,6 @@ namespace XivVoices.Voice {
 
         Dictionary<string, CancellationTokenSource> taskCancellations = new Dictionary<string, CancellationTokenSource>();
 
-        public ConditionalWeakTable<ActorMemory, UserAnimationOverride> UserAnimationOverrides { get; private set; } = new();
         public bool TextIsPresent { get => _textIsPresent; set => _textIsPresent = value; }
 
         private unsafe bool IsBoundByDuty { get => Conditions.Instance()->BoundByDuty; }
@@ -135,14 +141,17 @@ namespace XivVoices.Voice {
         private void InitializeServices()
         {
             // Initialize all services that depend on the game process
+#if !DISABLE_ANAMNESIS
             _memoryService = new MemoryService();
             _gameDataService = new GameDataService();
             _animationService = new AnimationService();
             StartServices();
+#endif
         }
 
         private async void StartServices()
         {
+#if !DISABLE_ANAMNESIS
             await _memoryService.Initialize();
             Plugin.PluginLog.Information("StartServices --> Waiting for Process Response");
             while (!Process.GetCurrentProcess().Responding)
@@ -155,6 +164,7 @@ namespace XivVoices.Voice {
             await _animationService.Initialize();
             await _animationService.Start();
             await _memoryService.Start();
+#endif
         }
 
         /*
@@ -451,7 +461,7 @@ namespace XivVoices.Voice {
 
         public async void TriggerLipSync(ICharacter character, string length, bool forceAnim = false, ushort anim = 0)
         {
-            
+#if !DISABLE_ANAMNESIS
             if (IsBoundByDuty && !IsWatchingCutscene) return;
             if (!Plugin.Config.Active) return;
 
@@ -634,6 +644,7 @@ namespace XivVoices.Voice {
 
 
             }
+#endif // DISABLE_ANAMNESIS
             
         }
 
@@ -666,7 +677,7 @@ namespace XivVoices.Voice {
 
         public async void StopLipSync(ICharacter character)
         {
-            
+#if !DISABLE_ANAMNESIS
             if (IsBoundByDuty && !IsWatchingCutscene) return;
             if (!Plugin.Config.Active) return;
             if (character == null) return;
@@ -705,7 +716,7 @@ namespace XivVoices.Voice {
             {
                 Plugin.PluginLog.Error($"Error writing memory for {character.Name}, report it!");
             }
-
+#endif // DISABLE_ANAMNESIS
         }
 
         public int EstimateDurationFromMessage(string message)
@@ -924,10 +935,12 @@ namespace XivVoices.Voice {
             _clientState.TerritoryChanged -= _clientState_TerritoryChanged;
             disposed = true;
 
+#if !DISABLE_ANAMNESIS
             _memoryService?.Shutdown();
             _gameDataService?.Shutdown();
             _animationService?.Shutdown();
             _openChatBubbleHook?.Dispose();
+#endif
         }
 
         public class UserAnimationOverride
