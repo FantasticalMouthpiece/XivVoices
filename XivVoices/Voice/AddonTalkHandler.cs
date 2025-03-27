@@ -482,7 +482,7 @@ namespace XivVoices.Voice {
 #endif
                                     _plugin.Log($"Task mouthMovement[6] was finished");
 
-                                    Lipsync.SetCharacterMode(character.Address, Lipsync.CharacterMode.None);
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
                                     Lipsync.SetLipsOverride(character.Address, 0);
                                 }
 
@@ -500,14 +500,14 @@ namespace XivVoices.Voice {
                                 _plugin.Log($"Task was started mouthMovement[5] durationMs[{mouthMovement[5] * 2}] delay [{adjustedDelay}]");
 
                                 await Task.Delay(adjustedDelay, token);
-                                if (!token.IsCancellationRequested && character != null && character != null)
+                                if (!token.IsCancellationRequested && character != null)
                                 {
 #if DEBUG
                                     _chatGui.Print($"Task mouthMovement[5] was finished");
 #endif
                                     _plugin.Log($"Task mouthMovement[5] was finished");
 
-                                    Lipsync.SetCharacterMode(character.Address, Lipsync.CharacterMode.None);
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
                                     Lipsync.SetLipsOverride(character.Address, 0);
                                 }
 
@@ -533,7 +533,7 @@ namespace XivVoices.Voice {
 #endif
                                     _plugin.Log($"Task mouthMovement[4] was finished");
 
-                                    Lipsync.SetCharacterMode(character.Address, Lipsync.CharacterMode.None);
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
                                     Lipsync.SetLipsOverride(character.Address, 0);
                                 }
                             }
@@ -610,44 +610,40 @@ namespace XivVoices.Voice {
 
         public async void StopLipSync(ICharacter character)
         {
-            // if (IsBoundByDuty && !IsWatchingCutscene) return;
-            // if (!Plugin.Config.Active) return;
-            // if (character == null) return;
+            if (IsBoundByDuty && !IsWatchingCutscene) return;
+            if (!Plugin.Config.Active) return;
+            if (character == null) return;
 
-            // Plugin.PluginLog.Information("StopLipSync started");
+            Plugin.PluginLog.Information("StopLipSync started");
 
-            // if (taskCancellations.TryGetValue(character.ToString(), out var cts))
-            // {
-            //     //_chatGui.Print("Cancellation " + character.Name);
-            //     try
-            //     {
-            //         Plugin.PluginLog.Information("StopLipSync cancelling cts");
-            //         cts.Cancel();
-            //     }
-            //     catch (ObjectDisposedException)
-            //     {
-            //         Plugin.PluginLog.Error($"CTS for {character.Name} was called to be disposed even though it was disposed already, report it!");
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         Plugin.PluginLog.Error($"CTS for {character.Name} was called to be disposed but caught an exception, report it!");
-            //     }
-            //     return;
-            // }
+            if (taskCancellations.TryGetValue(character.ToString(), out var cts))
+            {
+                //_chatGui.Print("Cancellation " + character.Name);
+                try
+                {
+                    Plugin.PluginLog.Information("StopLipSync cancelling cts");
+                    cts.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    Plugin.PluginLog.Error($"CTS for {character.Name} was called to be disposed even though it was disposed already, report it!");
+                }
+                catch (Exception ex)
+                {
+                    Plugin.PluginLog.Error($"CTS for {character.Name} was called to be disposed but caught an exception, report it!");
+                }
+                return;
+            }
 
-            // try
-            // {
-            //     Plugin.PluginLog.Information("StopLipSync writing memory");
-            //     var actorMemory = new ActorMemory();
-            //     actorMemory.SetAddress(character.Address);
-            //     var animationMemory = actorMemory.Animation;
-            //     animationMemory.LipsOverride = SpeakNormalShort;
-            //     MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
-            // }
-            // catch (Exception ex)
-            // {
-            //     Plugin.PluginLog.Error($"Error writing memory for {character.Name}, report it!");
-            // }
+            try
+            {
+                Plugin.PluginLog.Information("StopLipSync writing memory");
+                Lipsync.SetLipsOverride(character.Address, 0);
+            }
+            catch (Exception ex)
+            {
+                Plugin.PluginLog.Error($"Error writing memory for {character.Name}, report it!");
+            }
         }
 
         public int EstimateDurationFromMessage(string message)
