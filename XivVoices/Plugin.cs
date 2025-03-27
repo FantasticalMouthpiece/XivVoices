@@ -617,7 +617,7 @@ public class Plugin : IDalamudPlugin
             {
                 PluginLog.Info("Sound Mod Intercepted");
 #if DEBUG
-                        _chat.Print("Sound Mod Intercepted");
+                        Chat.Print("Sound Mod Intercepted");
 #endif
             }
     }
@@ -626,7 +626,7 @@ public class Plugin : IDalamudPlugin
     private void _clientState_TerritoryChanged(ushort e)
     {
 #if DEBUG
-            _chat.Print("Territory is " + e);
+            Chat.Print("Territory is " + e);
 #endif
     }
     //private unsafe bool IsResidential() {
