@@ -5,7 +5,7 @@
         <PackageProjectUrl>https://github.com/FantasticalMouthpiece/XivVoices</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
         <IsPackable>false</IsPackable>
-        <Version>0.3.3.1</Version>
+        <Version>0.3.4.0</Version>
     </PropertyGroup>
 
     <PropertyGroup>

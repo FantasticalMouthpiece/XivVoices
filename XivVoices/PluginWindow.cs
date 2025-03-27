@@ -1115,6 +1115,18 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
 
+                if (ImGui.CollapsingHeader("Version 0.3.4.0", ImGuiTreeNodeFlags.None))
+                {
+                  ImGui.Bullet();
+                  ImGui.TextWrapped("Updated for 7.2/API12/NET9");
+                  ImGui.Bullet();
+                  ImGui.TextWrapped("FFmpeg now runs natively on Linux and MacOS");
+                  ImGui.Bullet();
+                  ImGui.TextWrapped("LocalTTS is now affected by 'Speed Control'");
+                  ImGui.Bullet();
+                  ImGui.TextWrapped("Voicelines now play on repeated NPC interactions again, unless 'Hide Talk Addon' is enabled.");
+                }
+
                 if (ImGui.CollapsingHeader("Version 0.3.3.1", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet();
