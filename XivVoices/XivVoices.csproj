@@ -8,10 +8,6 @@
         <Version>0.3.3.1</Version>
     </PropertyGroup>
 
-    <ItemGroup Condition="$(DefineConstants.Contains('DISABLE_ANAMNESIS'))">
-      <Compile Remove="Anamnesis\**\*.cs" />
-    </ItemGroup>
-
     <PropertyGroup>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
