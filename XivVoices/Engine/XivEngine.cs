@@ -1547,19 +1547,10 @@ namespace XivVoices.Engine
                 if (msg.FilePath.EndsWith(".ogg"))
                 {
                     Plugin.PluginLog.Information($"SpeakLocallyAsync: found ogg path: {msg.FilePath}");
-                    WaveStream waveStream = null;
-
-                    // Check for audio speed adjustment or special effects
-                    bool changeSpeed = Plugin.Config.Speed != 100;
-                    bool applyEffects = SoundEffects(msg) != "";
 
                     try
                     {
-                        // Load and possibly modify the OGG file
-                        if (changeSpeed || applyEffects)
-                            waveStream = await FFmpegFileToWaveStream(msg);
-                        else
-                            waveStream = DecodeOggOpusToPCM(msg.FilePath);
+                        WaveStream waveStream = await FFmpegFileToWaveStream(msg);
                         PlayAudio(msg, waveStream, "xivv");
                     }
                     catch (Exception ex)
@@ -1638,6 +1629,13 @@ namespace XivVoices.Engine
             string outputFilePath = System.IO.Path.Combine(XivEngine.Instance.Database.DirectoryPath, "current" + XivEngine.Instance.Database.GenerateRandomSuffix() + ".ogg");
 
             string filterArgs = SoundEffects(msg);
+
+            Plugin.PluginLog.Information($"FilterArgs: {filterArgs}");
+            if (string.IsNullOrEmpty(filterArgs)) {
+              Plugin.PluginLog.Information("FilterArgs empty, not running ffmpeg");
+              return DecodeOggOpusToPCM(msg.FilePath);
+            }
+
             string arguments = $"-i \"{msg.FilePath}\" -filter_complex \"{filterArgs}\" -c:a libopus \"{outputFilePath}\"";
 
             await Plugin.FFmpegger.ExecuteFFmpegCommand(arguments);
