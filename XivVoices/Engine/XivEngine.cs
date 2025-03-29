@@ -1265,28 +1265,16 @@ namespace XivVoices.Engine
 
                     var pcmData = await ttsEngine.SpeakTTS(sentence, localTTS[speaker]);
                     var waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(22050, 1);
-                    string tempFilePath = System.IO.Path.Combine(XivEngine.Instance.Database.DirectoryPath, "localtts" + XivEngine.Instance.Database.GenerateRandomSuffix() + ".wav");
+                    var stream = new MemoryStream();
+                    var writer = new BinaryWriter(stream);
 
-                    using (var waveFileWriter = new WaveFileWriter(tempFilePath, waveFormat))
+                    foreach (var sample in pcmData)
                     {
-                        foreach (var sample in pcmData)
-                        {
-                            waveFileWriter.WriteSample(sample);
-                        }
+                        writer.Write(sample);
                     }
 
-                    msg.FilePath = tempFilePath;
-                    WaveStream waveStream = await FFmpegFileToWaveStream(msg);
-                    
-                    try
-                    {
-                        File.Delete(tempFilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Plugin.PluginLog.Error($"Error deleting temporary file: {ex.Message}");
-                    }
-                    
+                    stream.Position = 0;
+                    WaveStream waveStream = new RawSourceWaveStream(stream, waveFormat);
                     PlayAudio(msg, waveStream, "ai");
                 }
                 catch (Exception ex)
@@ -1305,7 +1293,9 @@ namespace XivVoices.Engine
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            // TODO: Dalamud seems to not return the player name anymore -- at least not through this interface.
+            // bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            bool iAmSpeaking = false;
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
@@ -1547,19 +1537,10 @@ namespace XivVoices.Engine
                 if (msg.FilePath.EndsWith(".ogg"))
                 {
                     Plugin.PluginLog.Information($"SpeakLocallyAsync: found ogg path: {msg.FilePath}");
-                    WaveStream waveStream = null;
-
-                    // Check for audio speed adjustment or special effects
-                    bool changeSpeed = Plugin.Config.Speed != 100;
-                    bool applyEffects = SoundEffects(msg) != "";
 
                     try
                     {
-                        // Load and possibly modify the OGG file
-                        if (changeSpeed || applyEffects)
-                            waveStream = await FFmpegFileToWaveStream(msg);
-                        else
-                            waveStream = DecodeOggOpusToPCM(msg.FilePath);
+                        WaveStream waveStream = await FFmpegFileToWaveStream(msg);
                         PlayAudio(msg, waveStream, "xivv");
                     }
                     catch (Exception ex)
@@ -1638,6 +1619,13 @@ namespace XivVoices.Engine
             string outputFilePath = System.IO.Path.Combine(XivEngine.Instance.Database.DirectoryPath, "current" + XivEngine.Instance.Database.GenerateRandomSuffix() + ".ogg");
 
             string filterArgs = SoundEffects(msg);
+
+            Plugin.PluginLog.Information($"FilterArgs: {filterArgs}");
+            if (string.IsNullOrEmpty(filterArgs)) {
+              Plugin.PluginLog.Information("FilterArgs empty, not running ffmpeg");
+              return DecodeOggOpusToPCM(msg.FilePath);
+            }
+
             string arguments = $"-i \"{msg.FilePath}\" -filter_complex \"{filterArgs}\" -c:a libopus \"{outputFilePath}\"";
 
             await Plugin.FFmpegger.ExecuteFFmpegCommand(arguments);
@@ -1697,7 +1685,7 @@ namespace XivVoices.Engine
             bool changeSpeed = false;
             string additionalChanges = "";
             if (Plugin.Config.Speed != 100) changeSpeed = true;
-            if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
+            if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC != null && msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
 
             string filterArgs = "";
             bool addEcho = false;
@@ -1724,7 +1712,7 @@ namespace XivVoices.Engine
             float tempo = 1.0f;
 
             // Sounds Effects for Age
-            if (msg.NPC.Type == "Old")
+            if (msg.NPC?.Type == "Old")
             {
                 setRate *= (1 - 0.1f);
                 tempo /= (1 - 0.1f);
@@ -1735,7 +1723,7 @@ namespace XivVoices.Engine
             // Sound Effects for Dragons
             if (msg.TtsData.Race.StartsWith("Dragon"))
             {
-                if(msg.NPC.Type == "Female")
+                if(msg.NPC?.Type == "Female")
                 {
                     setRate *= (1 - 0.1f);
                     tempo /= (1 + 0.1f);
@@ -1792,10 +1780,10 @@ namespace XivVoices.Engine
             }
 
             // Sound Effects for Primals
-            if (msg.NPC.Type.StartsWith("Primal"))
+            if (msg.NPC != null && msg.NPC.Type.StartsWith("Primal"))
             addEcho = true; 
 
-            if (msg.NPC.Type == "Primal M1")
+            if (msg.NPC?.Type == "Primal M1")
             { 
                 setRate *= (1 - 0.15f);
                 tempo /= (1 - 0.1f);
@@ -1803,7 +1791,7 @@ namespace XivVoices.Engine
                 filterArgs += $"\"atempo={tempo},asetrate={setRate}\"";
             }
 
-            else if (msg.NPC.Type == "Primal Dual")
+            else if (msg.NPC?.Type == "Primal Dual")
             {
                 if (msg.Speaker == "Thal" || msg.Sentence.StartsWith("Nald"))
                     filterArgs += "\"rubberband=pitch=0.92\"";
@@ -1814,10 +1802,10 @@ namespace XivVoices.Engine
             }
 
             // Sound Effects for Bosses
-            if (msg.NPC.Type.StartsWith("Boss"))
+            if (msg.NPC != null && msg.NPC.Type.StartsWith("Boss"))
                 addEcho = true;
 
-            if (msg.NPC.Type == "Boss F1")
+            if (msg.NPC?.Type == "Boss F1")
             {
                 if (filterArgs != "") filterArgs += ",";
                 filterArgs += "\"[0:a]asplit=2[sc][oc];[sc]rubberband=pitch=0.8[sc];[oc]rubberband=pitch=1.0[oc];[sc][oc]amix=inputs=2:duration=longest,volume=2\"";

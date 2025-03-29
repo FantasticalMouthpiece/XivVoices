@@ -88,7 +88,7 @@ namespace XivVoices.Engine
         public string FilePath = "";
         public string Network = "";
         public string VoiceName;
-        public XivNPC NPC = null;
+        public XivNPC? NPC = null;
 
         public bool Ignored;
         public bool Reported;
