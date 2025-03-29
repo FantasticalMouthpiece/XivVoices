@@ -31,7 +31,7 @@ namespace XivVoices.Engine
         public string ToolsPath { get { return "C:/XIV_Voices/Tools";  } }
         public string Firstname { get; } = "_FIRSTNAME_";
         public string Lastname { get; } = "_LASTNAME_";
-        public Dictionary<string, XivNPC> NpcData { get; set; }
+        public Dictionary<string, XivNPC?> NpcData { get; set; }
         public Dictionary<string, PlayerCharacter> PlayerData { get; set; }
         public List<string> NpcsWithRetainerLines { get; set; } = new List<string>()
             {
@@ -494,7 +494,7 @@ namespace XivVoices.Engine
             NpcData = ReadResourceNPCs(resourceName);
             if (NpcData == null)
             {
-                NpcData = new Dictionary<string, XivNPC>();
+                NpcData = new Dictionary<string, XivNPC?>();
                 Plugin.PluginLog.Error("Something is wrong with the NPC database");
             }
         }
@@ -653,7 +653,7 @@ namespace XivVoices.Engine
         }
 
 
-        public Dictionary<string, XivNPC> ReadResourceNPCs(string resourceName)
+        public Dictionary<string, XivNPC?> ReadResourceNPCs(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceStream = assembly.GetManifestResourceStream(resourceName);
@@ -952,7 +952,7 @@ namespace XivVoices.Engine
             return stringBuilder.ToString();
         }
 
-        public XivNPC GetNPC(string npcName, string npcId, TTSData ttsData, ref bool fetchedByID)
+        public XivNPC? GetNPC(string npcName, string npcId, TTSData ttsData, ref bool fetchedByID)
         {
             // Handle Bubbles
             if (ttsData != null && npcName == "Bubble")
@@ -960,7 +960,7 @@ namespace XivVoices.Engine
                 // TODO: Check if the bubble belongs to one of the main characters by making a list
 
                 Plugin.PluginLog.Information("GetNPC: " + npcName + " - " + npcId + " --> Grabbed Bubble");
-                XivNPC npc = new XivNPC();
+                XivNPC? npc = new XivNPC();
                 npc.Gender = ttsData.Gender;
                 npc.Race = ttsData.Race;
                 npc.Tribe = ttsData.Tribe;
@@ -989,7 +989,7 @@ namespace XivVoices.Engine
             else if (ttsData != null && ttsData.Body == "Beastman")
             {
                 Plugin.PluginLog.Information("GetNPC: " + npcName + ", Beast Tribe: " + ttsData.Race + " --> Grabbed NpcData");
-                XivNPC npc = new XivNPC();
+                XivNPC? npc = new XivNPC();
                 npc.Gender = ttsData.Gender;
                 npc.Race = ttsData.Race;
                 npc.Tribe = ttsData.Tribe;

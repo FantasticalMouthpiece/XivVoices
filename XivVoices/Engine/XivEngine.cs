@@ -1293,7 +1293,9 @@ namespace XivVoices.Engine
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            // TODO: Dalamud seems to not return the player name anymore -- at least not through this interface.
+            // bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
+            bool iAmSpeaking = false;
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
@@ -1683,7 +1685,7 @@ namespace XivVoices.Engine
             bool changeSpeed = false;
             string additionalChanges = "";
             if (Plugin.Config.Speed != 100) changeSpeed = true;
-            if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
+            if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC != null && msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
 
             string filterArgs = "";
             bool addEcho = false;
@@ -1710,7 +1712,7 @@ namespace XivVoices.Engine
             float tempo = 1.0f;
 
             // Sounds Effects for Age
-            if (msg.NPC.Type == "Old")
+            if (msg.NPC?.Type == "Old")
             {
                 setRate *= (1 - 0.1f);
                 tempo /= (1 - 0.1f);
@@ -1721,7 +1723,7 @@ namespace XivVoices.Engine
             // Sound Effects for Dragons
             if (msg.TtsData.Race.StartsWith("Dragon"))
             {
-                if(msg.NPC.Type == "Female")
+                if(msg.NPC?.Type == "Female")
                 {
                     setRate *= (1 - 0.1f);
                     tempo /= (1 + 0.1f);
@@ -1778,10 +1780,10 @@ namespace XivVoices.Engine
             }
 
             // Sound Effects for Primals
-            if (msg.NPC.Type.StartsWith("Primal"))
+            if (msg.NPC != null && msg.NPC.Type.StartsWith("Primal"))
             addEcho = true; 
 
-            if (msg.NPC.Type == "Primal M1")
+            if (msg.NPC?.Type == "Primal M1")
             { 
                 setRate *= (1 - 0.15f);
                 tempo /= (1 - 0.1f);
@@ -1789,7 +1791,7 @@ namespace XivVoices.Engine
                 filterArgs += $"\"atempo={tempo},asetrate={setRate}\"";
             }
 
-            else if (msg.NPC.Type == "Primal Dual")
+            else if (msg.NPC?.Type == "Primal Dual")
             {
                 if (msg.Speaker == "Thal" || msg.Sentence.StartsWith("Nald"))
                     filterArgs += "\"rubberband=pitch=0.92\"";
@@ -1800,10 +1802,10 @@ namespace XivVoices.Engine
             }
 
             // Sound Effects for Bosses
-            if (msg.NPC.Type.StartsWith("Boss"))
+            if (msg.NPC != null && msg.NPC.Type.StartsWith("Boss"))
                 addEcho = true;
 
-            if (msg.NPC.Type == "Boss F1")
+            if (msg.NPC?.Type == "Boss F1")
             {
                 if (filterArgs != "") filterArgs += ",";
                 filterArgs += "\"[0:a]asplit=2[sc][oc];[sc]rubberband=pitch=0.8[sc];[oc]rubberband=pitch=1.0[oc];[sc][oc]amix=inputs=2:duration=longest,volume=2\"";
