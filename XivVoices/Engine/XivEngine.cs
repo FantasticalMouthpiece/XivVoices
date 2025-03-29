@@ -1265,28 +1265,16 @@ namespace XivVoices.Engine
 
                     var pcmData = await ttsEngine.SpeakTTS(sentence, localTTS[speaker]);
                     var waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(22050, 1);
-                    string tempFilePath = System.IO.Path.Combine(XivEngine.Instance.Database.DirectoryPath, "localtts" + XivEngine.Instance.Database.GenerateRandomSuffix() + ".wav");
+                    var stream = new MemoryStream();
+                    var writer = new BinaryWriter(stream);
 
-                    using (var waveFileWriter = new WaveFileWriter(tempFilePath, waveFormat))
+                    foreach (var sample in pcmData)
                     {
-                        foreach (var sample in pcmData)
-                        {
-                            waveFileWriter.WriteSample(sample);
-                        }
+                        writer.Write(sample);
                     }
 
-                    msg.FilePath = tempFilePath;
-                    WaveStream waveStream = await FFmpegFileToWaveStream(msg);
-                    
-                    try
-                    {
-                        File.Delete(tempFilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Plugin.PluginLog.Error($"Error deleting temporary file: {ex.Message}");
-                    }
-                    
+                    stream.Position = 0;
+                    WaveStream waveStream = new RawSourceWaveStream(stream, waveFormat);
                     PlayAudio(msg, waveStream, "ai");
                 }
                 catch (Exception ex)
