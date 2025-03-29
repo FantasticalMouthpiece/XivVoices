@@ -1115,6 +1115,12 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
 
+                if (ImGui.CollapsingHeader("Version 0.3.4.1", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fix TTS");
+                }
+                
                 if (ImGui.CollapsingHeader("Version 0.3.4.0", ImGuiTreeNodeFlags.None))
                 {
                   ImGui.Bullet();
