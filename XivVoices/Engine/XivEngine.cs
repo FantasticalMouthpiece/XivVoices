@@ -24,6 +24,9 @@ namespace XivVoices.Engine
     public class XivEngine
     {
         #region Private Parameters
+
+        private Plugin plugin;
+
         private string currentVersion { get; set; }
 
         bool CheckingForNewVersion { get; set; } = false;
@@ -56,7 +59,7 @@ namespace XivVoices.Engine
         #region Core Methods
         public static XivEngine Instance;
 
-        public XivEngine(Database _database, Audio _audio, Updater _updater)
+        public XivEngine(Plugin plugin, Database _database, Audio _audio, Updater _updater)
         {
             try
             {
@@ -70,6 +73,7 @@ namespace XivVoices.Engine
                 currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 speakBlock = new SemaphoreSlim(1, 1);
                 reportBlock = new SemaphoreSlim(1, 1);
+                this.plugin = plugin;
                 this.Database = _database;
                 this.Audio = _audio;
                 this.Updater = _updater;
@@ -231,7 +235,7 @@ namespace XivVoices.Engine
                 Plugin.PluginLog.Information("Race after Mapper: " + msg.TtsData.Race);
             }
 
-            string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+            string[] fullname = plugin.PlayerName.Split(" ");
 
             if (Plugin.Config.FrameworkActive)
             {
@@ -1978,7 +1982,7 @@ namespace XivVoices.Engine
             try
             {
                 Plugin.PluginLog.Information($"Reporting line: \"{xivMessage.Sentence}\"");
-                string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+                string[] fullname = plugin.PlayerName.Split(" ");
                 xivMessage.Sentence = xivMessage.TtsData.Message;
                 xivMessage.Sentence = xivMessage.Sentence.Replace(fullname[0], "_FIRSTNAME_");
                 if (fullname.Length > 1)

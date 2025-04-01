@@ -110,6 +110,17 @@ public class Plugin : IDalamudPlugin
 
     public AddonTalkHandler AddonTalkHandler { get; set; }
 
+    private string? playerName;
+    public string? PlayerName
+    {
+        get => playerName;
+        set
+        {
+            PluginLog.Warning("Setting PlayerName to " + value);
+            playerName = value;
+        }
+    }
+
     public static IPluginLog PluginLog { get; set; }
 
     public static FFmpeg FFmpegger { get; set; }
@@ -212,13 +223,20 @@ public class Plugin : IDalamudPlugin
             database = new Database(Interface, this);
             updater = new Updater();
             audio = new Audio(this);
-            xivEngine = new XivEngine(database, audio, updater);
+            xivEngine = new XivEngine(this, database, audio, updater);
+
+            InitializePlayer();
         }
         catch (Exception e)
         {
             PluginLog.Warning("InitializeEverything: " + e, e.Message);
             PrintError("[XivVoicesInitializer] Fatal Error, the plugin did not initialize correctly!\n" + e.Message);
         }
+    }
+
+    private void InitializePlayer()
+    {
+        PlayerName = Service.ClientState.LocalPlayer.Name.TextValue;
     }
 
 
@@ -460,11 +478,11 @@ public class Plugin : IDalamudPlugin
             if (!Config.Active || !Config.Initialized) return;
 
             if (sender.Length == 1)
-                sender = ClientState.LocalPlayer.Name.TextValue;
+                sender = PlayerName;
 
             var stringtype = type.ToString();
             var correctSender = AddonTalkHandler.CleanSender(sender);
-            var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
+            var user = $"{PlayerName}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
             if (cancel)
             {
@@ -485,7 +503,7 @@ public class Plugin : IDalamudPlugin
             var eyes = "-1";
 
             // Get Character Data
-            if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
+            if (sender.Contains(PlayerName))
                 character = ClientState.LocalPlayer;
             else
                 character = AddonTalkHandler.GetCharacterFromName(sender);
@@ -639,6 +657,10 @@ public class Plugin : IDalamudPlugin
 
     private void _clientState_Login()
     {
+        if (_hasBeenInitialized)
+        {
+            InitializePlayer();
+        }
     }
 
     #endregion
