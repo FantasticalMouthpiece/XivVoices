@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.System.Resource.Handle;
+using FFXIVClientStructs.FFXIV.Client.System.Resource;
+using XivVoices.Resource;
 
 namespace XivVoices
 {
@@ -21,7 +23,7 @@ namespace XivVoices
             internal const string PlaySpecificSound = "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 33 F6 8B DA 48 8B F9 0F BA E2 0F";
 
             internal const string GetResourceSync = "E8 ?? ?? ?? ?? 48 8B D8 8B C7";
-            internal const string GetResourceAsync = "E8 ?? ?? ?? ?? 48 8B D8 EB 07 F0 FF 83";
+            internal const string GetResourceAsync = "E8 ?? ?? ?? 00 48 8B D8 EB ?? F0 FF 83 ?? ?? 00 00";
             internal const string LoadSoundFile = "E8 ?? ?? ?? ?? 48 85 C0 75 04 B0 F6";
 
             // internal const string MusicManagerOffset = "48 89 87 ?? ?? ?? ?? 49 8B CC E8 ?? ?? ?? ?? 48 8B 8F";
@@ -41,9 +43,29 @@ namespace XivVoices
 
         private delegate void* PlaySpecificSoundDelegate(long a1, int idx);
 
-        private delegate void* GetResourceSyncPrototype(IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown);
+        // https://github.com/xivdev/Penumbra/blob/master/Penumbra/Interop/Hooks/ResourceLoading/ResourceService.cs#L96-L102
+        private delegate ResourceHandle* GetResourceSyncPrototype(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            nint unk7,
+            uint unk8
+        );
 
-        private delegate void* GetResourceAsyncPrototype(IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown, bool isUnknown);
+        private delegate ResourceHandle* GetResourceAsyncPrototype(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            byte isUnknown,
+            nint unk8,
+            uint unk9
+        );
 
         private delegate IntPtr LoadSoundFileDelegate(IntPtr resourceHandle, uint a2);
 
@@ -236,40 +258,94 @@ namespace XivVoices
             return this.PlaySpecificSoundHook!.Original(a1, idx);
         }
 
-        private void* GetResourceSyncDetour(IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown)
+        private ResourceHandle* GetResourceSyncDetour(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            nint unk7,
+            uint unk8
+        )
         {
-            return this.ResourceDetour(true, pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, false);
+            return this.ResourceDetour(resourceManager, pCategoryId, pResourceType, pResourceHash, pPath, pGetResParams, null, unk7, unk8, true);
         }
 
-        private void* GetResourceAsyncDetour(IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown, bool isUnknown)
+        private ResourceHandle* GetResourceAsyncDetour(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            byte isUnknown,
+            nint unk8,
+            uint unk9
+        )
         {
-            return this.ResourceDetour(false, pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, isUnknown);
+            return this.ResourceDetour(resourceManager, pCategoryId, pResourceType, pResourceHash, pPath, pGetResParams, isUnknown, unk8, unk9, false);
         }
 
-        private void* ResourceDetour(bool isSync, IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown, bool isUnknown)
+        private static bool EndsWithDotScd(byte* pPath)
         {
-            var ret = this.CallOriginalResourceHandler(isSync, pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, isUnknown);
+            if (pPath == null) return false;
 
-            var path = Util.ReadTerminatedString((byte*)pPath);
-            if (ret != null && path.EndsWith(".scd"))
+            int len = 0;
+            while (pPath[len] != 0) len++;
+
+            if (len < 4) return false;
+
+            return pPath[len - 4] == (byte)'.' &&
+                  pPath[len - 3] == (byte)'s' &&
+                  pPath[len - 2] == (byte)'c' &&
+                  pPath[len - 1] == (byte)'d';
+        }
+
+        private ResourceHandle* ResourceDetour(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            byte? isUnknown,
+            nint unk8,
+            uint unk9,
+            bool isSync
+        )
+        {
+            var ret = this.CallOriginalResourceHandler(resourceManager, pCategoryId, pResourceType, pResourceHash, pPath, pGetResParams, isUnknown, unk8, unk9, isSync);
+
+            if (ret != null && EndsWithDotScd(pPath))
             {
                 var scdData = Marshal.ReadIntPtr((IntPtr)ret + ResourceDataPointerOffset);
                 // if we immediately have the scd Data, cache it, otherwise add it to a waiting list to hopefully be picked up at sound play time
                 if (scdData != IntPtr.Zero)
                 {
-                    this.Scds[scdData] = path;
+                    this.Scds[scdData] = Util.ReadTerminatedString(pPath);;
                 }
             }
 
             return ret;
         }
 
-        private void* CallOriginalResourceHandler(bool isSync, IntPtr pFileManager, uint* pCategoryId, char* pResourceType,
-            uint* pResourceHash, char* pPath, void* pUnknown, bool isUnknown)
+        private ResourceHandle* CallOriginalResourceHandler(
+            ResourceManager* resourceManager,
+            ResourceCategory* pCategoryId,
+            ResourceType* pResourceType,
+            int* pResourceHash,
+            byte* pPath,
+            GetResourceParameters* pGetResParams,
+            byte? isUnknown,
+            nint unk8,
+            uint unk9,
+            bool isSync
+        )
         {
             return isSync
-                ? this.GetResourceSyncHook!.Original(pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown)
-                : this.GetResourceAsyncHook!.Original(pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, isUnknown);
+                ? this.GetResourceSyncHook!.Original(resourceManager, pCategoryId, pResourceType, pResourceHash, pPath, pGetResParams, unk8, unk9)
+                : this.GetResourceAsyncHook!.Original(resourceManager, pCategoryId, pResourceType, pResourceHash, pPath, pGetResParams, isUnknown!.Value, unk8, unk9);
         }
         private bool PlaySpecificSoundDetourInner(long a1, int idx)
         {
