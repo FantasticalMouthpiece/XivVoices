@@ -246,18 +246,32 @@ namespace XivVoices
             return this.ResourceDetour(false, pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, isUnknown);
         }
 
+        private static bool EndsWithDotScd(byte* pPath)
+        {
+            if (pPath == null) return false;
+
+            int len = 0;
+            while (pPath[len] != 0) len++;
+
+            if (len < 4) return false;
+
+            return pPath[len - 4] == (byte)'.' &&
+                  pPath[len - 3] == (byte)'s' &&
+                  pPath[len - 2] == (byte)'c' &&
+                  pPath[len - 1] == (byte)'d';
+        }
+
         private void* ResourceDetour(bool isSync, IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown, bool isUnknown)
         {
             var ret = this.CallOriginalResourceHandler(isSync, pFileManager, pCategoryId, pResourceType, pResourceHash, pPath, pUnknown, isUnknown);
 
-            var path = Util.ReadTerminatedString((byte*)pPath);
-            if (ret != null && path.EndsWith(".scd"))
+            if (ret != null && EndsWithDotScd((byte*)pPath))
             {
                 var scdData = Marshal.ReadIntPtr((IntPtr)ret + ResourceDataPointerOffset);
                 // if we immediately have the scd Data, cache it, otherwise add it to a waiting list to hopefully be picked up at sound play time
                 if (scdData != IntPtr.Zero)
                 {
-                    this.Scds[scdData] = path;
+                    this.Scds[scdData] = Util.ReadTerminatedString((byte*)pPath);
                 }
             }
 
