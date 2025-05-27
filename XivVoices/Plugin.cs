@@ -29,6 +29,7 @@ using XivVoices.Attributes;
 using XivVoices.Engine;
 using XivVoices.Services;
 using XivVoices.Voice;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 //using FFXIVClientStructs.FFXIV.Client.Game.Housing;
 using ICharacter = Dalamud.Game.ClientState.Objects.Types.ICharacter;
 
@@ -46,7 +47,8 @@ public class Plugin : IDalamudPlugin
     private readonly IObjectTable _objectTable;
     private IToastGui _toast;
     private IGameConfig _gameConfig;
-    private readonly IFramework _framework;
+    public readonly IFramework _framework;
+    public IKeyState KeyState { get; set; }
 
     private readonly PluginCommandManager<Plugin> commandManager;
 
@@ -139,7 +141,8 @@ public class Plugin : IDalamudPlugin
         IGameGui gameGui,
         IDragDropManager dragDrop,
         IPluginLog pluginLog,
-        ITextureProvider textureProvider)
+        ITextureProvider textureProvider,
+        IKeyState keyState)
     {
         PluginLog = pluginLog;
         Chat = chat;
@@ -179,6 +182,7 @@ public class Plugin : IDalamudPlugin
             _gameConfig = gameConfig;
             SigScanner = scanner;
             TextureProvider = textureProvider;
+            KeyState = keyState;
             InteropProvider = interopProvider;
             _objectTable = objectTable;
             _framework = framework;
@@ -550,12 +554,44 @@ public class Plugin : IDalamudPlugin
             AddonTalkHandler.StopLipSync(character);
     }
 
-    public void ClickTalk()
+    public unsafe void ClickTalk()
     {
-        // Note: We used to also check for `!IsPlayerBoundByDuty()` but that seems unnecessary now that we check if the TalkAddon is visible.
-        // It would also break auto-advance in cutscenes at the start/end of duties.
-        if (Config.TextAutoAdvanceEnabled && !Config.Mute && _addonTalkManager.IsVisible())
-            SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        // Disable auto-advance temporarily when holding ALT.
+        var altHeld = KeyState[VirtualKey.MENU];
+        if (!Config.TextAutoAdvanceEnabled || !Config.Active || Config.Mute || !_addonTalkManager.IsVisible() || altHeld) return;
+
+        if (Config.ExperimentalAutoAdvance)
+        {
+          // "Experimental" and opt-in because I've had this crash once, but that was likely due to
+          // it being ran off the framework thread. Haven't had a crash since.
+          _framework.RunOnFrameworkThread(() => {
+            var addonTalk = _addonTalkManager.GetAddonTalk();
+            var evt = stackalloc AtkEvent[1]
+            {
+                new()
+                {
+                    Listener = (AtkEventListener*)addonTalk,
+                    Target = &AtkStage.Instance()->AtkEventTarget,
+                    State = new()
+                    {
+                        StateFlags = (AtkEventStateFlags)132
+                    }
+                }
+            };
+            var data = stackalloc AtkEventData[1];
+            for (var i =0 ; i < sizeof(AtkEventData); i++)
+            {
+              ((byte*)data)[i] = 0;
+            }
+            addonTalk->ReceiveEvent(AtkEventType.MouseDown, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseClick, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseUp, 0, evt, data);
+          });
+        }
+        else
+        {
+          SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        }
     }
 
     public void HideTalk()

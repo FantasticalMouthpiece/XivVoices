@@ -62,6 +62,9 @@ public class Configuration : IPluginConfiguration
     // Internal
     public bool ConfigMigrated { get; set; } = false;
 
+    // Experimental
+    public bool ExperimentalAutoAdvance { get; set; } = false;
+
     public void Initialize()
     {
       string configPath = $"C:/XIV_Voices/Tools/config.json"; // was hardcoded to C:\ previously, so we stick with it.

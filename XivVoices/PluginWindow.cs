@@ -652,6 +652,17 @@ public class PluginWindow : Window, IDisposable
 
                 ImGui.SameLine();
                 ImGui.Text("Enable Text Auto-Advance");
+                
+                // ExperimentalAutoAdvance
+                var experimentalAutoAdvance = Plugin.Config.ExperimentalAutoAdvance;
+                if (ImGui.Checkbox("##ExperimentalAutoAdvance", ref experimentalAutoAdvance))
+                {
+                    Plugin.Config.ExperimentalAutoAdvance = experimentalAutoAdvance;
+                    Plugin.Config.Save();
+                }
+
+                ImGui.SameLine();
+                ImGui.Text("[Experimental] Use a more reliable Auto-Advance method");
 
                 // TextAutoHideEnabled
                 // var textAutoHideEnabled = Plugin.Config.TextAutoHideEnabled;
