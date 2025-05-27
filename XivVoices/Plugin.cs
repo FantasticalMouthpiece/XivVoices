@@ -47,7 +47,7 @@ public class Plugin : IDalamudPlugin
     private readonly IObjectTable _objectTable;
     private IToastGui _toast;
     private IGameConfig _gameConfig;
-    public readonly IFramework _framework;
+    public static IFramework _framework { get; set; }
     public IKeyState KeyState { get; set; }
 
     private readonly PluginCommandManager<Plugin> commandManager;
@@ -146,6 +146,7 @@ public class Plugin : IDalamudPlugin
     {
         PluginLog = pluginLog;
         Chat = chat;
+        _framework = framework;
 
         #region Constructor
 
@@ -185,7 +186,6 @@ public class Plugin : IDalamudPlugin
             KeyState = keyState;
             InteropProvider = interopProvider;
             _objectTable = objectTable;
-            _framework = framework;
             _framework.Update += framework_Update;
             _condition = condition;
             _gameGui = gameGui;
@@ -459,86 +459,88 @@ public class Plugin : IDalamudPlugin
 
     private void ChatText(string sender, SeString message, XivChatType type, int senderId, bool cancel = false)
     {
-        try
-        {
-            if (!Config.Active || !Config.Initialized) return;
-
-            if (sender.Length == 1)
-                sender = ClientState.LocalPlayer.Name.TextValue;
-
-            var stringtype = type.ToString();
-            var correctSender = AddonTalkHandler.CleanSender(sender);
-            var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
-
-            if (cancel)
+        _framework.RunOnFrameworkThread(() => {
+            try
             {
-                stringtype = "Cancel";
-                XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
-                    "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
-                return;
-            }
+                if (!Config.Active || !Config.Initialized) return;
 
-            // Default Parameters
-            ICharacter character = null;
-            var id = "-1";
-            var skeleton = "-1";
-            var body = "-1";
-            var gender = "default";
-            var race = "-1";
-            var tribe = "-1";
-            var eyes = "-1";
+                if (sender.Length == 1)
+                    sender = ClientState.LocalPlayer.Name.TextValue;
 
-            // Get Character Data
-            if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
-                character = ClientState.LocalPlayer;
-            else
-                character = AddonTalkHandler.GetCharacterFromName(sender);
+                var stringtype = type.ToString();
+                var correctSender = AddonTalkHandler.CleanSender(sender);
+                var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
-            // Fill the Parameters
-            if (character == null)
-            {
-                if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
+                if (cancel)
                 {
-                    body = database.PlayerData[sender].Body;
-                    gender = database.PlayerData[sender].Gender;
-                    race = database.PlayerData[sender].Race;
-                    tribe = database.PlayerData[sender].Tribe;
-                    eyes = database.PlayerData[sender].EyeShape;
+                    stringtype = "Cancel";
+                    XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
+                        "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
+                    return;
                 }
-            }
-            else
-            {
-                id = character.DataId.ToString();
-                body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
-                gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
-                race = character.Customize[(int)CustomizeIndex.Race].ToString();
-                tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
-                eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-                if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
-                    type == XivChatType.FreeCompany)
+                // Default Parameters
+                ICharacter character = null;
+                var id = "-1";
+                var skeleton = "-1";
+                var body = "-1";
+                var gender = "default";
+                var race = "-1";
+                var tribe = "-1";
+                var eyes = "-1";
+
+                // Get Character Data
+                if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
+                    character = ClientState.LocalPlayer;
+                else
+                    character = AddonTalkHandler.GetCharacterFromName(sender);
+
+                // Fill the Parameters
+                if (character == null)
                 {
-                    var playerCharacter = new PlayerCharacter
+                    if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
                     {
-                        Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
-                        Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
-                        Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
-                        Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
-                        EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
-                    };
-                    database.UpdateAndSavePlayerData(sender, playerCharacter);
+                        body = database.PlayerData[sender].Body;
+                        gender = database.PlayerData[sender].Gender;
+                        race = database.PlayerData[sender].Race;
+                        tribe = database.PlayerData[sender].Tribe;
+                        eyes = database.PlayerData[sender].EyeShape;
+                    }
                 }
-            }
+                else
+                {
+                    id = character.DataId.ToString();
+                    body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
+                    gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
+                    race = character.Customize[(int)CustomizeIndex.Race].ToString();
+                    tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
+                    eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-            //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
-            XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
-                tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
-        }
-        catch (Exception ex)
-        {
-            LogError("Error in ChatText method. " + ex);
-            PluginLog.Error($"ChatText ---> Exception: {ex}");
-        }
+                    if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
+                        type == XivChatType.FreeCompany)
+                    {
+                        var playerCharacter = new PlayerCharacter
+                        {
+                            Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
+                            Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
+                            Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
+                            Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
+                            EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
+                        };
+                        database.UpdateAndSavePlayerData(sender, playerCharacter);
+                    }
+                }
+
+                //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
+                XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
+                    tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
+            }
+            catch (Exception ex)
+            {
+                LogError("Error in ChatText method. " + ex);
+                PluginLog.Error($"ChatText ---> Exception: {ex}");
+            }
+        });
     }
 
 

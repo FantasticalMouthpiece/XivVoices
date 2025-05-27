@@ -174,7 +174,7 @@ namespace XivVoices.Engine
                         using (var audioOutput = GetAudioEngine())
                         {
                             audioOutput.Init(panningProvider);
-                            var data = GetDistanceAndBalance(xivMessage.TtsData.Position);
+                            var data = await GetDistanceAndBalance(xivMessage.TtsData.Position);
                             volumeProvider.Volume = AdjustVolume(data.Distance);
                             panningProvider.Pan = data.Balance;
                             audioOutput.Play();
@@ -190,7 +190,7 @@ namespace XivVoices.Engine
                                     break;
                                 }
 
-                                data = GetDistanceAndBalance(xivMessage.TtsData.Position);
+                                data = await GetDistanceAndBalance(xivMessage.TtsData.Position);
                                 volumeProvider.Volume = AdjustVolume(data.Distance);
                                 panningProvider.Pan = data.Balance;
 
@@ -378,17 +378,19 @@ namespace XivVoices.Engine
             }
         }
 
-        (float Distance,float Balance) GetDistanceAndBalance(Vector3 speakerPosition)
+        async Task<(float Distance,float Balance)> GetDistanceAndBalance(Vector3 speakerPosition)
         {
             try
             {
+                var playerPosition = await Plugin._framework.RunOnFrameworkThread(() => Plugin.ClientState.LocalPlayer.Position);
+
                 // Update camera vectors
                 Vector3 cameraForward = Vector3.Normalize(Plugin.PlayerCamera.Forward);
                 Vector3 cameraUp = Vector3.Normalize(Plugin.PlayerCamera.Top);
                 Vector3 cameraRight = Vector3.Normalize(Vector3.Cross(cameraUp, cameraForward));
 
                 // Calculate relative position from player to speaker
-                Vector3 relativePosition = speakerPosition - Plugin.ClientState.LocalPlayer.Position;
+                Vector3 relativePosition = speakerPosition - playerPosition;
 
                 // Distance for volume adjustment
                 float distance = relativePosition.Length();
