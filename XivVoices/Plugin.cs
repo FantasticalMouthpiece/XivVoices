@@ -743,6 +743,7 @@ public class Plugin : IDalamudPlugin
         string helpStr = "Xiv Voices Commands:\r\n" +
             "on (Enable Xiv Voices)\r\n" +
             "off (Disable Xiv Voices)\r\n" +
+            "toggle (Disable/Enable Xiv Voices)\r\n" +
             "mute (Mute/Unmute Volume)\r\n" +
             "skip (Skips currently playing dialogue)\r\n" +
             "volup (Increases volume by 10%)\r\n" +
@@ -790,10 +791,18 @@ public class Plugin : IDalamudPlugin
                     case "on":
                         Config.Active = true;
                         Config.Save();
+                        Chat.Print($"[XIVV] On");
                         break;
                     case "off":
                         Config.Active = false;
                         Config.Save();
+                        Chat.Print($"[XIVV] Off");
+                        break;
+                    case "toggle":
+                        Config.Active = !Config.Active;
+                        Config.Save();
+                        var text = Config.Active ? "On" : "Off";
+                        Chat.Print($"[XIVV] {text}");
                         break;
                     case "mute":
                         if (!Config.Mute)
