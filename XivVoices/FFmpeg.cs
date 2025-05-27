@@ -117,7 +117,7 @@ public class FFmpeg : IDisposable
     return xivvDirectory;
   }
 
-  public async Task ExecuteFFmpegCommand(string arguments)
+  public async Task ExecuteFFmpegCommand(string arguments, bool retry = true)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
     if (Dalamud.Utility.Util.IsWine() && Plugin.Config.WineUseNativeFFmpeg)
@@ -127,9 +127,18 @@ public class FFmpeg : IDisposable
       bool success = await SendFFmpegWineCommand($"ffmpeg {_arguments}");
       if (!success)
       {
-        PluginReference.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
-        await ExecuteFFmpegCommandWindows(arguments);
-        isFFmpegWineProcessRunning = false;
+        if (retry)
+        {
+          StartFFmpegWineProcess();
+          await Task.Delay(500);
+          await ExecuteFFmpegCommand(arguments, false);
+        }
+        else
+        {
+          PluginReference.Chat.Print("[XIVV] Failed to run ffmpeg natively. See '/xivv wine' for more information.");
+          await ExecuteFFmpegCommandWindows(arguments);
+          isFFmpegWineProcessRunning = false;
+        }
       }
     } else {
       await ExecuteFFmpegCommandWindows(arguments);
