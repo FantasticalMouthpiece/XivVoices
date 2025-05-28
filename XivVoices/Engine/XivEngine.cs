@@ -1288,6 +1288,7 @@ namespace XivVoices.Engine
                     {
                         Plugin.PluginLog.Error($"Error deleting temporary file: {ex.Message}");
                     }
+
                     PlayAudio(msg, waveStream, "ai");
                 }
                 catch (Exception ex)
@@ -1624,6 +1625,22 @@ namespace XivVoices.Engine
             }
         }
 
+        public static WaveStream DecodeWavIEEEToPCM(string filePath)
+        {
+          Plugin.PluginLog.Information("DecodeWavToPCM ---> start");
+
+          byte[] wavBytes = File.ReadAllBytes(filePath);
+          var memoryStream = new MemoryStream(wavBytes);
+          var reader = new WaveFileReader(memoryStream);
+
+          if (reader.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
+          {
+              throw new InvalidOperationException("Expected IEEE float WAV format.");
+          }
+
+          return reader;
+        }
+
         static bool changeTimeBusy = false;
         public static async Task<WaveStream> FFmpegFileToWaveStream(XivMessage msg)
         {
@@ -1636,7 +1653,7 @@ namespace XivVoices.Engine
             Plugin.PluginLog.Information($"FilterArgs: {filterArgs}");
             if (string.IsNullOrEmpty(filterArgs)) {
               Plugin.PluginLog.Information("FilterArgs empty, not running ffmpeg");
-              return DecodeOggOpusToPCM(msg.FilePath);
+              return msg.FilePath.EndsWith("wav") ? DecodeWavIEEEToPCM(msg.FilePath) : DecodeOggOpusToPCM(msg.FilePath);
             }
 
             string arguments = $"-i \"{msg.FilePath}\" -filter_complex \"{filterArgs}\" -c:a libopus \"{outputFilePath}\"";
