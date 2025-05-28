@@ -1232,7 +1232,6 @@ namespace XivVoices.Engine
 
         public async Task SpeakAI(XivMessage msg)
         {
-            if (msg.ChatType == "Bubble") return; // Maybe unwanted behavior? To me it seemed obnoxious.
             try
             {
                 if (msg.Speaker == "Narrator" && Plugin.Config.IgnoreNarratorLines) return;
