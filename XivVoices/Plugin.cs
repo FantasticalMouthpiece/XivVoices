@@ -752,7 +752,8 @@ public class Plugin : IDalamudPlugin
             "settings (Opens the settings window)\r\n" +
             "dialogue (Opens the dialogue settings tab)\r\n" +
             "audio (Opens the audio settings tab)\r\n" +
-            "logs (Opens the audio logs tab)";
+            "logs (Opens the audio logs tab)\r\n" +
+            "changelog (Opens the changelog tab)";
 
         if (Dalamud.Utility.Util.IsWine())
         {
@@ -843,6 +844,9 @@ public class Plugin : IDalamudPlugin
                         break;
                     case "logs":
                         OpenConfigTab("Audio Logs");
+                        break;
+                    case "changelog":
+                        OpenConfigTab("Changelog");
                         break;
                     case "wine":
                         if (Dalamud.Utility.Util.IsWine())
