@@ -48,6 +48,7 @@ public class Configuration : IPluginConfiguration
     public string LocalTTSFemale { get; set; } = "en-gb-jenny_dioco-medium";
     public int LocalTTSUngendered { get; set; } = 1;
     public int LocalTTSVolume { get; set; } = 100;
+    public int LocalTTSSpeed { get; set; } = 100;
     public bool LocalTTSPlayerSays { get; set; }
     public bool IgnoreNarratorLines { get; set; }
 

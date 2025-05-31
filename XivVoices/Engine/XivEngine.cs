@@ -1709,9 +1709,10 @@ namespace XivVoices.Engine
 
         static string SoundEffects(XivMessage msg)
         {
-            bool changeSpeed = false;
+            int speed = msg.Network == "Online" ? Plugin.Config.LocalTTSSpeed : Plugin.Config.Speed;
+
+            bool changeSpeed = speed != 100;
             string additionalChanges = "";
-            if (Plugin.Config.Speed != 100) changeSpeed = true;
             if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC != null && msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
 
             string filterArgs = "";
@@ -1857,7 +1858,7 @@ namespace XivVoices.Engine
             if (changeSpeed)
             {
                 if (filterArgs != "") filterArgs += ",";
-                filterArgs += $"\"[0:a]apad=pad_dur=0.25,atempo={(Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
+                filterArgs += $"\"[0:a]apad=pad_dur=0.25,atempo={(speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
             }
 
             if (additionalChanges == "robot")

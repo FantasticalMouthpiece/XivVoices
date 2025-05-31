@@ -878,6 +878,17 @@ public class PluginWindow : Window, IDisposable
                     Plugin.Config.Save();
                 }
 
+                // LocalTTS Speed Slider
+                ImGui.Dummy(new Vector2(0, 5 * ImGuiHelpers.GlobalScale));
+                ImGui.TextWrapped("Speed:");
+                ImGui.SameLine();
+                var localTTSSpeed = Plugin.Config.LocalTTSSpeed;
+                if (ImGui.SliderInt("##localTTSSpeedSlider", ref localTTSSpeed, 75, 200, localTTSSpeed.ToString()))
+                {
+                    Plugin.Config.LocalTTSSpeed = localTTSSpeed;
+                    Plugin.Config.Save();
+                }
+
                 ImGui.Dummy(new Vector2(0, 5 * ImGuiHelpers.GlobalScale));
                 var localTTSPlayerSays = Plugin.Config.LocalTTSPlayerSays;
                 if (ImGui.Checkbox("##localTTSPlayerSays", ref localTTSPlayerSays))
