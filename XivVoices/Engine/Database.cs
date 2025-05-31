@@ -866,9 +866,10 @@ namespace XivVoices.Engine
             return filePath + ".ogg";
         }
 
-        public string VoiceDataExists(string voiceName, string speaker, string sentence)
+        // a bunch of old genereated lines that have "<yawn>" or other text in angled brackets actually just removed the brackets but not the text in the filename, so search for both.
+        public string VoiceDataExists(string voiceName, string speaker, string sentence, bool retryWithBracketText = true)
         {
-            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence);
+            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence, !retryWithBracketText);
 
             string actorDirectory   = VoiceFilesPath   + "/" + voiceName;
             string speakerDirectory = actorDirectory   + "/" + speaker;
@@ -904,15 +905,22 @@ namespace XivVoices.Engine
                     return filePath + ".ogg";
             }
             else
-                return null;
+            {
+              if (retryWithBracketText) return VoiceDataExists(voiceName, speaker, sentence, false);
+              else return null;
+            }
         }
 
-        public string CleanedSentenceAndSpeakerForFile(string voiceName, ref string speaker, string sentence)
+        public string CleanedSentenceAndSpeakerForFile(string voiceName, ref string speaker, string sentence, bool keepBracketText = false)
         {
             speaker = Regex.Replace(speaker, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
             
             // Create a Path
-            string cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
+            string cleanedSentence;
+
+            if (keepBracketText) cleanedSentence = Regex.Replace(sentence, @"<([^<>]*)>", "$1");
+            else cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
+
             cleanedSentence = RemoveSymbolsAndLowercase(cleanedSentence);
 
             int missingFromDirectoryPath = 0;
