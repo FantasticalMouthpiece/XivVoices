@@ -64,7 +64,7 @@ public class Configuration : IPluginConfiguration
     public bool ConfigMigrated { get; set; } = false;
 
     // Experimental
-    public bool ExperimentalAutoAdvance { get; set; } = false;
+    public bool ExperimentalAutoAdvance { get; set; } = true;
 
     public void Initialize()
     {

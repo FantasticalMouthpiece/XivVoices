@@ -564,8 +564,9 @@ public class Plugin : IDalamudPlugin
 
         if (Config.ExperimentalAutoAdvance)
         {
-          // "Experimental" and opt-in because I've had this crash once, but that was likely due to
+          // "Experimental" because I've had this crash once, but that was likely due to
           // it being ran off the framework thread. Haven't had a crash since.
+          // This is opt-out for now, hopefully it doesn't cause any issues.
           _framework.RunOnFrameworkThread(() => {
             var addonTalk = _addonTalkManager.GetAddonTalk();
             var evt = stackalloc AtkEvent[1]
