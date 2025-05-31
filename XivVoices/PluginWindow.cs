@@ -1137,6 +1137,32 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
 
+                if (ImGui.CollapsingHeader("Version 0.3.5.0", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Retry native ffmpeg commands once when using WINE.");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed BattleTalk dialogue not being read");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed NPC Bubbles not being read");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added opt-out experimental auto advance option");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed local reporting");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed ~500ms stutter when approaching zone gates");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added '/xivv toggle'");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added '/xivv changelog'");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Print status after '/xivv [on|off|toggle]'");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added separate speed control for local TTS");
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed lines with angled brackets, e.g. '<sigh>' not being found in some cases");
+                }
+
                 if (ImGui.CollapsingHeader("Version 0.3.4.1", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet();
