@@ -1859,7 +1859,7 @@ namespace XivVoices.Engine
             if (changeSpeed)
             {
                 if (filterArgs != "") filterArgs += ",";
-                filterArgs += $"\"atempo={(Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
+                filterArgs += $"\"[0:a]apad=pad_dur=0.25,atempo={(Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
             }
 
             if (additionalChanges == "robot")
