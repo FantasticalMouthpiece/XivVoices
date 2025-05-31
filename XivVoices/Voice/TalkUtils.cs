@@ -36,8 +36,8 @@ namespace XivVoices.Voice {
         }
         public static unsafe AddonTalkText ReadTalkAddon(AddonBattleTalk* talkAddon) {
             return new AddonTalkText {
-                Speaker = ReadTextNode(talkAddon->AtkTextNode220),
-                Text = ReadTextNode(talkAddon->AtkTextNode228),
+                Speaker = ReadTextNode(talkAddon->Speaker),
+                Text = ReadTextNode(talkAddon->Text),
             };
         }
 

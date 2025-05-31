@@ -29,6 +29,7 @@ using XivVoices.Attributes;
 using XivVoices.Engine;
 using XivVoices.Services;
 using XivVoices.Voice;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 //using FFXIVClientStructs.FFXIV.Client.Game.Housing;
 using ICharacter = Dalamud.Game.ClientState.Objects.Types.ICharacter;
 
@@ -46,7 +47,8 @@ public class Plugin : IDalamudPlugin
     private readonly IObjectTable _objectTable;
     private IToastGui _toast;
     private IGameConfig _gameConfig;
-    private readonly IFramework _framework;
+    public static IFramework _framework { get; set; }
+    public IKeyState KeyState { get; set; }
 
     private readonly PluginCommandManager<Plugin> commandManager;
 
@@ -139,10 +141,12 @@ public class Plugin : IDalamudPlugin
         IGameGui gameGui,
         IDragDropManager dragDrop,
         IPluginLog pluginLog,
-        ITextureProvider textureProvider)
+        ITextureProvider textureProvider,
+        IKeyState keyState)
     {
         PluginLog = pluginLog;
         Chat = chat;
+        _framework = framework;
 
         #region Constructor
 
@@ -179,9 +183,9 @@ public class Plugin : IDalamudPlugin
             _gameConfig = gameConfig;
             SigScanner = scanner;
             TextureProvider = textureProvider;
+            KeyState = keyState;
             InteropProvider = interopProvider;
             _objectTable = objectTable;
-            _framework = framework;
             _framework.Update += framework_Update;
             _condition = condition;
             _gameGui = gameGui;
@@ -455,86 +459,88 @@ public class Plugin : IDalamudPlugin
 
     private void ChatText(string sender, SeString message, XivChatType type, int senderId, bool cancel = false)
     {
-        try
-        {
-            if (!Config.Active || !Config.Initialized) return;
-
-            if (sender.Length == 1)
-                sender = ClientState.LocalPlayer.Name.TextValue;
-
-            var stringtype = type.ToString();
-            var correctSender = AddonTalkHandler.CleanSender(sender);
-            var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
-
-            if (cancel)
+        _framework.RunOnFrameworkThread(() => {
+            try
             {
-                stringtype = "Cancel";
-                XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
-                    "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
-                return;
-            }
+                if (!Config.Active || !Config.Initialized) return;
 
-            // Default Parameters
-            ICharacter character = null;
-            var id = "-1";
-            var skeleton = "-1";
-            var body = "-1";
-            var gender = "default";
-            var race = "-1";
-            var tribe = "-1";
-            var eyes = "-1";
+                if (sender.Length == 1)
+                    sender = ClientState.LocalPlayer.Name.TextValue;
 
-            // Get Character Data
-            if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
-                character = ClientState.LocalPlayer;
-            else
-                character = AddonTalkHandler.GetCharacterFromName(sender);
+                var stringtype = type.ToString();
+                var correctSender = AddonTalkHandler.CleanSender(sender);
+                var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
-            // Fill the Parameters
-            if (character == null)
-            {
-                if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
+                if (cancel)
                 {
-                    body = database.PlayerData[sender].Body;
-                    gender = database.PlayerData[sender].Gender;
-                    race = database.PlayerData[sender].Race;
-                    tribe = database.PlayerData[sender].Tribe;
-                    eyes = database.PlayerData[sender].EyeShape;
+                    stringtype = "Cancel";
+                    XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
+                        "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
+                    return;
                 }
-            }
-            else
-            {
-                id = character.DataId.ToString();
-                body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
-                gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
-                race = character.Customize[(int)CustomizeIndex.Race].ToString();
-                tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
-                eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-                if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
-                    type == XivChatType.FreeCompany)
+                // Default Parameters
+                ICharacter character = null;
+                var id = "-1";
+                var skeleton = "-1";
+                var body = "-1";
+                var gender = "default";
+                var race = "-1";
+                var tribe = "-1";
+                var eyes = "-1";
+
+                // Get Character Data
+                if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
+                    character = ClientState.LocalPlayer;
+                else
+                    character = AddonTalkHandler.GetCharacterFromName(sender);
+
+                // Fill the Parameters
+                if (character == null)
                 {
-                    var playerCharacter = new PlayerCharacter
+                    if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
                     {
-                        Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
-                        Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
-                        Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
-                        Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
-                        EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
-                    };
-                    database.UpdateAndSavePlayerData(sender, playerCharacter);
+                        body = database.PlayerData[sender].Body;
+                        gender = database.PlayerData[sender].Gender;
+                        race = database.PlayerData[sender].Race;
+                        tribe = database.PlayerData[sender].Tribe;
+                        eyes = database.PlayerData[sender].EyeShape;
+                    }
                 }
-            }
+                else
+                {
+                    id = character.DataId.ToString();
+                    body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
+                    gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
+                    race = character.Customize[(int)CustomizeIndex.Race].ToString();
+                    tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
+                    eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-            //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
-            XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
-                tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
-        }
-        catch (Exception ex)
-        {
-            LogError("Error in ChatText method. " + ex);
-            PluginLog.Error($"ChatText ---> Exception: {ex}");
-        }
+                    if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
+                        type == XivChatType.FreeCompany)
+                    {
+                        var playerCharacter = new PlayerCharacter
+                        {
+                            Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
+                            Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
+                            Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
+                            Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
+                            EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
+                        };
+                        database.UpdateAndSavePlayerData(sender, playerCharacter);
+                    }
+                }
+
+                //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
+                XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
+                    tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
+            }
+            catch (Exception ex)
+            {
+                LogError("Error in ChatText method. " + ex);
+                PluginLog.Error($"ChatText ---> Exception: {ex}");
+            }
+        });
     }
 
 
@@ -550,12 +556,45 @@ public class Plugin : IDalamudPlugin
             AddonTalkHandler.StopLipSync(character);
     }
 
-    public void ClickTalk()
+    public unsafe void ClickTalk()
     {
-        // Note: We used to also check for `!IsPlayerBoundByDuty()` but that seems unnecessary now that we check if the TalkAddon is visible.
-        // It would also break auto-advance in cutscenes at the start/end of duties.
-        if (Config.TextAutoAdvanceEnabled && !Config.Mute && _addonTalkManager.IsVisible())
-            SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        // Disable auto-advance temporarily when holding ALT.
+        var altHeld = KeyState[VirtualKey.MENU];
+        if (!Config.TextAutoAdvanceEnabled || !Config.Active || Config.Mute || !_addonTalkManager.IsVisible() || altHeld) return;
+
+        if (Config.ExperimentalAutoAdvance)
+        {
+          // "Experimental" because I've had this crash once, but that was likely due to
+          // it being ran off the framework thread. Haven't had a crash since.
+          // This is opt-out for now, hopefully it doesn't cause any issues.
+          _framework.RunOnFrameworkThread(() => {
+            var addonTalk = _addonTalkManager.GetAddonTalk();
+            var evt = stackalloc AtkEvent[1]
+            {
+                new()
+                {
+                    Listener = (AtkEventListener*)addonTalk,
+                    Target = &AtkStage.Instance()->AtkEventTarget,
+                    State = new()
+                    {
+                        StateFlags = (AtkEventStateFlags)132
+                    }
+                }
+            };
+            var data = stackalloc AtkEventData[1];
+            for (var i =0 ; i < sizeof(AtkEventData); i++)
+            {
+              ((byte*)data)[i] = 0;
+            }
+            addonTalk->ReceiveEvent(AtkEventType.MouseDown, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseClick, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseUp, 0, evt, data);
+          });
+        }
+        else
+        {
+          SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        }
     }
 
     public void HideTalk()
@@ -705,6 +744,7 @@ public class Plugin : IDalamudPlugin
         string helpStr = "Xiv Voices Commands:\r\n" +
             "on (Enable Xiv Voices)\r\n" +
             "off (Disable Xiv Voices)\r\n" +
+            "toggle (Disable/Enable Xiv Voices)\r\n" +
             "mute (Mute/Unmute Volume)\r\n" +
             "skip (Skips currently playing dialogue)\r\n" +
             "volup (Increases volume by 10%)\r\n" +
@@ -752,10 +792,18 @@ public class Plugin : IDalamudPlugin
                     case "on":
                         Config.Active = true;
                         Config.Save();
+                        Chat.Print($"[XIVV] On");
                         break;
                     case "off":
                         Config.Active = false;
                         Config.Save();
+                        Chat.Print($"[XIVV] Off");
+                        break;
+                    case "toggle":
+                        Config.Active = !Config.Active;
+                        Config.Save();
+                        var text = Config.Active ? "On" : "Off";
+                        Chat.Print($"[XIVV] {text}");
                         break;
                     case "mute":
                         if (!Config.Mute)

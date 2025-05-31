@@ -186,113 +186,114 @@ namespace XivVoices.Engine
         #region Processing Methods
         public void Process(string type, string speaker, string npcID, string skeletonID, string message, string body, string gender, string race, string tribe, string eyes, string language, Vector3 position, ICharacter character, string user)
         {
-            string possibleFileName = Regex.Replace(message, "<[^<]*>", "");
-            possibleFileName = this.Database.RemoveSymbolsAndLowercase(possibleFileName);
-            if(possibleFileName.IsNullOrEmpty()) return;
+            Plugin._framework.RunOnFrameworkThread(() => {
+                string possibleFileName = Regex.Replace(message, "<[^<]*>", "");
+                possibleFileName = this.Database.RemoveSymbolsAndLowercase(possibleFileName);
+                if(possibleFileName.IsNullOrEmpty()) return;
 
 
-            TTSData ttsData = new TTSData(type, speaker, npcID, skeletonID, message, body, gender, race, tribe, eyes, language, position, character, user);
-            XivMessage msg = new XivMessage(ttsData);
+                TTSData ttsData = new TTSData(type, speaker, npcID, skeletonID, message, body, gender, race, tribe, eyes, language, position, character, user);
+                XivMessage msg = new XivMessage(ttsData);
 
-            if (ttsData.Type != "Cancel" && ttsData.Language != "English")
-                return;
+                if (ttsData.Type != "Cancel" && ttsData.Language != "English")
+                    return;
 
-            if (ttsData.Speaker == "NPC")
-                return;
+                if (ttsData.Speaker == "NPC")
+                    return;
 
-            if (Plugin.Config.SkipEnabled && (ttsData.Type == "Dialogue" || ttsData.Type == "Cancel") )
-                Audio.StopAudio();
+                if (Plugin.Config.SkipEnabled && (ttsData.Type == "Dialogue" || ttsData.Type == "Cancel") )
+                    Audio.StopAudio();
 
-            if (ttsData.Type == "Cancel")
-                return;
+                if (ttsData.Type == "Cancel")
+                    return;
 
-            Plugin.PluginLog.Information($"New Dialogue: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}, [Message]:{msg.TtsData.Message},");
+                Plugin.PluginLog.Information($"New Dialogue: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}, [Message]:{msg.TtsData.Message},");
 
-            if (ttsData.Type != "Dialogue" && ttsData.Type != "Bubble" && ttsData.Type != "NPCDialogueAnnouncements")
-            {
-                Plugin.PluginLog.Information("[Ignored] " + ttsData.Speaker + ":" + ttsData.Message);
-                msg.Ignored = true;
-                msg.VoiceName = "Unknown";
-                msg.Network = "Online";
-                AddToQueue(msg);
-                return;
-            }
-
-            msg.TtsData.Body = Mapper.GetBody(int.Parse(msg.TtsData.Body));
-            msg.TtsData.Race = Mapper.GetRace(int.Parse(msg.TtsData.Race));
-            msg.TtsData.Tribe = Mapper.GetTribe(int.Parse(msg.TtsData.Tribe));
-            msg.TtsData.Eyes = Mapper.GetEyes(int.Parse(msg.TtsData.Eyes));
-            if (msg.TtsData.Body == "Beastman")
-            {
-                Plugin.PluginLog.Information("Race before Mapper: " + msg.TtsData.Race);
-                msg.TtsData.Race = Mapper.GetSkeleton(int.Parse(msg.TtsData.SkeletonID), msg.TtsData.Region);
-                if (msg.TtsData.Speaker.Contains("Moogle"))
-                    msg.TtsData.Race = "Moogle";
-                Plugin.PluginLog.Information("Race after Mapper: " + msg.TtsData.Race);
-            }
-
-            string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
-
-            if (Plugin.Config.FrameworkActive)
-            {
-                msg.Sentence = msg.Sentence.Replace(fullname[0], "_FIRSTNAME_");
-
-                if (fullname.Length > 1)
+                if (ttsData.Type != "Dialogue" && ttsData.Type != "Bubble" && ttsData.Type != "NPCDialogueAnnouncements")
                 {
-                    msg.Sentence = msg.Sentence.Replace(fullname[1], "_LASTNAME_");
+                    Plugin.PluginLog.Information("[Ignored] " + ttsData.Speaker + ":" + ttsData.Message);
+                    msg.Ignored = true;
+                    msg.VoiceName = "Unknown";
+                    msg.Network = "Online";
+                    AddToQueue(msg);
+                    return;
                 }
 
-                msg = CleanXivMessage(msg);
-                if (msg.Speaker == "???")
-                    msg = this.Database.GetNameless(msg);
-                msg = UpdateXivMessage(msg);
-
-                if (msg.FilePath == null)
-                    msg.Reported = true;
-            }
-            else
-            {
-                var results = GetPossibleSentences(message, fullname[0], fullname[1]);
-                bool sentenceFound = false;
-                foreach (var result in results)
+                msg.TtsData.Body = Mapper.GetBody(int.Parse(msg.TtsData.Body));
+                msg.TtsData.Race = Mapper.GetRace(int.Parse(msg.TtsData.Race));
+                msg.TtsData.Tribe = Mapper.GetTribe(int.Parse(msg.TtsData.Tribe));
+                msg.TtsData.Eyes = Mapper.GetEyes(int.Parse(msg.TtsData.Eyes));
+                if (msg.TtsData.Body == "Beastman")
                 {
-                    msg.Sentence = result;
+                    Plugin.PluginLog.Information("Race before Mapper: " + msg.TtsData.Race);
+                    msg.TtsData.Race = Mapper.GetSkeleton(int.Parse(msg.TtsData.SkeletonID), msg.TtsData.Region);
+                    if (msg.TtsData.Speaker.Contains("Moogle"))
+                        msg.TtsData.Race = "Moogle";
+                    Plugin.PluginLog.Information("Race after Mapper: " + msg.TtsData.Race);
+                }
+
+                string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+
+                if (Plugin.Config.FrameworkActive)
+                {
+                    msg.Sentence = msg.Sentence.Replace(fullname[0], "_FIRSTNAME_");
+
+                    if (fullname.Length > 1)
+                    {
+                        msg.Sentence = msg.Sentence.Replace(fullname[1], "_LASTNAME_");
+                    }
+
                     msg = CleanXivMessage(msg);
                     if (msg.Speaker == "???")
                         msg = this.Database.GetNameless(msg);
                     msg = UpdateXivMessage(msg);
-                    if (msg.FilePath != null)
-                    {
-                        sentenceFound = true;
-                        break;
-                    }
-                }
 
-                if (!sentenceFound)
-                {
-                    //msg.Sentence = msg.TtsData.Message;
-                    if (!msg.Reported)
-                    {
-                        ReportToArc(msg);
+                    if (msg.FilePath == null)
                         msg.Reported = true;
+                }
+                else
+                {
+                    var results = GetPossibleSentences(message, fullname[0], fullname[1]);
+                    bool sentenceFound = false;
+                    foreach (var result in results)
+                    {
+                        msg.Sentence = result;
+                        msg = CleanXivMessage(msg);
+                        if (msg.Speaker == "???")
+                            msg = this.Database.GetNameless(msg);
+                        msg = UpdateXivMessage(msg);
+                        if (msg.FilePath != null)
+                        {
+                            sentenceFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!sentenceFound)
+                    {
+                        //msg.Sentence = msg.TtsData.Message;
+                        if (!msg.Reported)
+                        {
+                            ReportToArc(msg);
+                            msg.Reported = true;
+                        }
                     }
                 }
-            }
 
-            if (msg.isRetainer && !Plugin.Config.RetainersEnabled) return;
-            if (IgnoredDialogues.Contains(msg.Speaker + msg.Sentence) || this.Database.Ignored.Contains(msg.Speaker)) return;
+                if (msg.isRetainer && !Plugin.Config.RetainersEnabled) return;
+                if (IgnoredDialogues.Contains(msg.Speaker + msg.Sentence) || this.Database.Ignored.Contains(msg.Speaker)) return;
 
-            Plugin.PluginLog.Information($"After processing: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}, [Message]:{msg.TtsData.Message},");
-            if (msg.NPC == null)
-                Plugin.PluginLog.Information("npc is null, voice name is " + msg.VoiceName);
+                Plugin.PluginLog.Information($"After processing: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}, [Message]:{msg.TtsData.Message},");
+                if (msg.NPC == null)
+                    Plugin.PluginLog.Information("npc is null, voice name is " + msg.VoiceName);
 
-            this.Database.Plugin.Log($"Data: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}\n{msg.TtsData.Speaker}:{msg.TtsData.Message}\n");
+                this.Database.Plugin.Log($"Data: [Gender]:{msg.TtsData.Gender}, [Body]:{msg.TtsData.Body}, [Race]:{msg.TtsData.Race}, [Tribe]:{msg.TtsData.Tribe}, [Eyes]:{msg.TtsData.Eyes} [Reported]:{msg.Reported} [Ignored]:{msg.Ignored}\n{msg.TtsData.Speaker}:{msg.TtsData.Message}\n");
 
-            if (msg.GetRequested != "")
-                _ = Database.GetRequest(msg);
-            else
-                AddToQueue(msg);
-
+                if (msg.GetRequested != "")
+                    _ = Database.GetRequest(msg);
+                else
+                    AddToQueue(msg);
+            });
         }
 
         public static List<string> GetPossibleSentences(string sentence, string firstName, string lastName)
@@ -1253,7 +1254,7 @@ namespace XivVoices.Engine
 
                     string sentence = Regex.Replace(msg.TtsData.Message, "[“”]", "\"");
                     if (msg.Ignored)
-                        sentence = ProcessPlayerChat(sentence, msg.Speaker);
+                        sentence = await ProcessPlayerChat(sentence, msg.Speaker);
 
                     sentence = ApplyLexicon(sentence, msg.Speaker);
 
@@ -1265,16 +1266,28 @@ namespace XivVoices.Engine
 
                     var pcmData = await ttsEngine.SpeakTTS(sentence, localTTS[speaker]);
                     var waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(22050, 1);
-                    var stream = new MemoryStream();
-                    var writer = new BinaryWriter(stream);
+                    string tempFilePath = System.IO.Path.Combine(XivEngine.Instance.Database.DirectoryPath, "localtts" + XivEngine.Instance.Database.GenerateRandomSuffix() + ".wav");
 
-                    foreach (var sample in pcmData)
+                    using (var waveFileWriter = new WaveFileWriter(tempFilePath, waveFormat))
                     {
-                        writer.Write(sample);
+                        foreach (var sample in pcmData)
+                        {
+                            waveFileWriter.WriteSample(sample);
+                        }
                     }
 
-                    stream.Position = 0;
-                    WaveStream waveStream = new RawSourceWaveStream(stream, waveFormat);
+                    msg.FilePath = tempFilePath;
+                    WaveStream waveStream = await FFmpegFileToWaveStream(msg);
+
+                    try
+                    {
+                        File.Delete(tempFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.PluginLog.Error($"Error deleting temporary file: {ex.Message}");
+                    }
+
                     PlayAudio(msg, waveStream, "ai");
                 }
                 catch (Exception ex)
@@ -1289,13 +1302,11 @@ namespace XivVoices.Engine
         }
 
 
-        public static string ProcessPlayerChat(string sentence, string speaker)
+        public static async Task<string> ProcessPlayerChat(string sentence, string speaker)
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            // TODO: Dalamud seems to not return the player name anymore -- at least not through this interface.
-            // bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
-            bool iAmSpeaking = false;
+            bool iAmSpeaking = await Plugin._framework.RunOnFrameworkThread(() => Plugin.ClientState.LocalPlayer.Name.TextValue == speaker);
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
@@ -1611,6 +1622,22 @@ namespace XivVoices.Engine
             }
         }
 
+        public static WaveStream DecodeWavIEEEToPCM(string filePath)
+        {
+          Plugin.PluginLog.Information("DecodeWavToPCM ---> start");
+
+          byte[] wavBytes = File.ReadAllBytes(filePath);
+          var memoryStream = new MemoryStream(wavBytes);
+          var reader = new WaveFileReader(memoryStream);
+
+          if (reader.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
+          {
+              throw new InvalidOperationException("Expected IEEE float WAV format.");
+          }
+
+          return reader;
+        }
+
         static bool changeTimeBusy = false;
         public static async Task<WaveStream> FFmpegFileToWaveStream(XivMessage msg)
         {
@@ -1623,7 +1650,7 @@ namespace XivVoices.Engine
             Plugin.PluginLog.Information($"FilterArgs: {filterArgs}");
             if (string.IsNullOrEmpty(filterArgs)) {
               Plugin.PluginLog.Information("FilterArgs empty, not running ffmpeg");
-              return DecodeOggOpusToPCM(msg.FilePath);
+              return msg.FilePath.EndsWith("wav") ? DecodeWavIEEEToPCM(msg.FilePath) : DecodeOggOpusToPCM(msg.FilePath);
             }
 
             string arguments = $"-i \"{msg.FilePath}\" -filter_complex \"{filterArgs}\" -c:a libopus \"{outputFilePath}\"";
@@ -1682,9 +1709,10 @@ namespace XivVoices.Engine
 
         static string SoundEffects(XivMessage msg)
         {
-            bool changeSpeed = false;
+            int speed = msg.Network == "Online" ? Plugin.Config.LocalTTSSpeed : Plugin.Config.Speed;
+
+            bool changeSpeed = speed != 100;
             string additionalChanges = "";
-            if (Plugin.Config.Speed != 100) changeSpeed = true;
             if (msg.VoiceName == "Omicron" || msg.VoiceName == "Node" || msg.NPC != null && msg.NPC.Type.Contains("Robot")) additionalChanges = "robot";
 
             string filterArgs = "";
@@ -1830,7 +1858,7 @@ namespace XivVoices.Engine
             if (changeSpeed)
             {
                 if (filterArgs != "") filterArgs += ",";
-                filterArgs += $"\"atempo={(Plugin.Config.Speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
+                filterArgs += $"\"[0:a]apad=pad_dur=0.25,atempo={(speed/100f).ToString(CultureInfo.InvariantCulture)}\"";
             }
 
             if (additionalChanges == "robot")

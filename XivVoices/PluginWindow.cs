@@ -652,6 +652,17 @@ public class PluginWindow : Window, IDisposable
 
                 ImGui.SameLine();
                 ImGui.Text("Enable Text Auto-Advance");
+                
+                // ExperimentalAutoAdvance
+                var experimentalAutoAdvance = Plugin.Config.ExperimentalAutoAdvance;
+                if (ImGui.Checkbox("##ExperimentalAutoAdvance", ref experimentalAutoAdvance))
+                {
+                    Plugin.Config.ExperimentalAutoAdvance = experimentalAutoAdvance;
+                    Plugin.Config.Save();
+                }
+
+                ImGui.SameLine();
+                ImGui.Text("[Experimental] Use a more reliable Auto-Advance method");
 
                 // TextAutoHideEnabled
                 // var textAutoHideEnabled = Plugin.Config.TextAutoHideEnabled;
@@ -779,7 +790,7 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Dummy(new Vector2(0, 20 * ImGuiHelpers.GlobalScale));
                 ImGui.TextWrapped("Speed Control");
                 var speed = Plugin.Config.Speed;
-                if (ImGui.SliderInt("##speedSlider", ref speed, 75, 150, speed.ToString()))
+                if (ImGui.SliderInt("##speedSlider", ref speed, 75, 200, speed.ToString()))
                 {
                     Plugin.Config.Speed = speed;
                     Plugin.Config.Save();
@@ -864,6 +875,17 @@ public class PluginWindow : Window, IDisposable
                 if (ImGui.SliderInt("##localTTSVolumeSlider", ref localTTSVolume, 0, 100, localTTSVolume.ToString()))
                 {
                     Plugin.Config.LocalTTSVolume = localTTSVolume;
+                    Plugin.Config.Save();
+                }
+
+                // LocalTTS Speed Slider
+                ImGui.Dummy(new Vector2(0, 5 * ImGuiHelpers.GlobalScale));
+                ImGui.TextWrapped("Speed:");
+                ImGui.SameLine();
+                var localTTSSpeed = Plugin.Config.LocalTTSSpeed;
+                if (ImGui.SliderInt("##localTTSSpeedSlider", ref localTTSSpeed, 75, 200, localTTSSpeed.ToString()))
+                {
+                    Plugin.Config.LocalTTSSpeed = localTTSSpeed;
                     Plugin.Config.Save();
                 }
 
