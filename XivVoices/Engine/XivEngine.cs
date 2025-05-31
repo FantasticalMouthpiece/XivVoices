@@ -1254,7 +1254,7 @@ namespace XivVoices.Engine
 
                     string sentence = Regex.Replace(msg.TtsData.Message, "[“”]", "\"");
                     if (msg.Ignored)
-                        sentence = ProcessPlayerChat(sentence, msg.Speaker);
+                        sentence = await ProcessPlayerChat(sentence, msg.Speaker);
 
                     sentence = ApplyLexicon(sentence, msg.Speaker);
 
@@ -1302,13 +1302,11 @@ namespace XivVoices.Engine
         }
 
 
-        public static string ProcessPlayerChat(string sentence, string speaker)
+        public static async Task<string> ProcessPlayerChat(string sentence, string speaker)
         {
             sentence = sentence.Trim();
             string playerName = speaker.Split(" ")[0];
-            // TODO: Dalamud seems to not return the player name anymore -- at least not through this interface.
-            // bool iAmSpeaking = Plugin.ClientState.LocalPlayer.Name.TextValue == speaker;
-            bool iAmSpeaking = false;
+            bool iAmSpeaking = await Plugin._framework.RunOnFrameworkThread(() => Plugin.ClientState.LocalPlayer.Name.TextValue == speaker);
             var options = RegexOptions.IgnoreCase;
             var emoticons = new Dictionary<string, string>
             {
