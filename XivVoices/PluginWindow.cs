@@ -790,7 +790,7 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Dummy(new Vector2(0, 20 * ImGuiHelpers.GlobalScale));
                 ImGui.TextWrapped("Speed Control");
                 var speed = Plugin.Config.Speed;
-                if (ImGui.SliderInt("##speedSlider", ref speed, 75, 150, speed.ToString()))
+                if (ImGui.SliderInt("##speedSlider", ref speed, 75, 200, speed.ToString()))
                 {
                     Plugin.Config.Speed = speed;
                     Plugin.Config.Save();
