@@ -403,7 +403,7 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Text("Report Missing Dialogues Automatically");
                 using (ImRaii.PushColor(ImGuiCol.Text, new Vector4(0.6f, 0.25f, 0.25f, 1.0f)))
                 {
-                  ImGui.Text("( English lines only, do not enable for other languages )");
+                  ImGui.Text("( This will do nothing if your game is not set to English )");
                   ImGui.Text("( Currently lines are only recorded to be missing locally )");
                 }
 

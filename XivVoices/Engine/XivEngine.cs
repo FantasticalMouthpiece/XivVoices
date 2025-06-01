@@ -1936,6 +1936,8 @@ namespace XivVoices.Engine
             if (!Plugin.Config.Reports) return;
             Plugin.PluginLog.Information("ReportUnknown");
 
+            if (Plugin.ClientState.ClientLanguage != Dalamud.Game.ClientLanguage.English) return;
+
             reports.Enqueue(new ReportXivMessage(msg, "unknown", ""));
         }
 
@@ -2006,7 +2008,7 @@ namespace XivVoices.Engine
             try
             {
                 Plugin.PluginLog.Information($"Reporting line: \"{xivMessage.Sentence}\"");
-                string[] fullname = Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" ");
+                string[] fullname = await Plugin._framework.RunOnFrameworkThread(() => Plugin.ClientState.LocalPlayer.Name.TextValue.Split(" "));
                 xivMessage.Sentence = xivMessage.TtsData.Message;
                 xivMessage.Sentence = xivMessage.Sentence.Replace(fullname[0], "_FIRSTNAME_");
                 if (fullname.Length > 1)
