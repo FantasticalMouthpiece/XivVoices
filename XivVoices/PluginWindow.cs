@@ -403,7 +403,7 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Text("Report Missing Dialogues Automatically");
                 using (ImRaii.PushColor(ImGuiCol.Text, new Vector4(0.6f, 0.25f, 0.25f, 1.0f)))
                 {
-                  ImGui.Text("( English lines only, do not enable for other languages )");
+                  ImGui.Text("( This will do nothing if your game is not set to English )");
                   ImGui.Text("( Currently lines are only recorded to be missing locally )");
                 }
 
@@ -1136,6 +1136,12 @@ public class PluginWindow : Window, IDisposable
             {
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
+
+                if (ImGui.CollapsingHeader("Version 0.3.5.1", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Fixed local reporting, again.");
+                }
 
                 if (ImGui.CollapsingHeader("Version 0.3.5.0", ImGuiTreeNodeFlags.None))
                 {
