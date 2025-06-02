@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -417,6 +417,12 @@ public class PluginWindow : Window, IDisposable
                 ImGui.SameLine();
                 ImGui.Text("Announce Reported Lines");
                 // END
+
+                if (ImGui.Button("Upload Reports"))
+                {
+                    XivEngine.Instance.UploadFileReports();
+                }
+
 
                 ImGui.Columns(1);
             }
