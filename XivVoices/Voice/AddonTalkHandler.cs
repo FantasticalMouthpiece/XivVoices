@@ -1,7 +1,4 @@
-﻿using Anamnesis.GameData.Excel;
-using Anamnesis.Memory;
-using Anamnesis.Services;
-using Dalamud.Game;
+﻿﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
@@ -51,9 +48,6 @@ namespace XivVoices.Voice {
         // private readonly Object _speechBubbleInfoLockObj = new();
         //private readonly Object mGameChatInfoLockObj = new();
 
-        private MemoryService _memoryService;
-        private AnimationService _animationService;
-        private GameDataService _gameDataService;
         private List<Dalamud.Game.ClientState.Objects.Types.IGameObject> _threadSafeObjectTable;
         public List<ActionTimeline> LipSyncTypes { get; private set; }
 
@@ -67,8 +61,19 @@ namespace XivVoices.Voice {
 
         Dictionary<string, CancellationTokenSource> taskCancellations = new Dictionary<string, CancellationTokenSource>();
 
-        public ConditionalWeakTable<ActorMemory, UserAnimationOverride> UserAnimationOverrides { get; private set; } = new();
         public bool TextIsPresent { get => _textIsPresent; set => _textIsPresent = value; }
+
+        private unsafe bool IsBoundByDuty { get => Conditions.Instance()->BoundByDuty; }
+        private unsafe bool IsWatchingCutscene { get => Conditions.Instance()->WatchingCutscene; }
+        private unsafe bool IsOccupiedInEvent { get => Conditions.Instance()->OccupiedInEvent; }
+        private unsafe bool IsOccupiedInQuestEvent { get => Conditions.Instance()->OccupiedInQuestEvent; }
+        private unsafe bool IsOccupiedInCutSceneEvent { get => Conditions.Instance()->OccupiedInCutSceneEvent; }
+        private unsafe bool IsWatchingCutscene78 { get => Conditions.Instance()->WatchingCutscene78; }
+
+        // ActionTimeline exd sheet
+        private ushort SpeakNormalLong = 631;
+        private ushort SpeakNormalMiddle = 630;
+        private ushort SpeakNormalShort = 629;
 
         public AddonTalkHandler(AddonTalkManager addonTalkManager, IFramework framework, IObjectTable objects,
             IClientState clientState, Plugin plugin, IChatGui chatGui, ISigScanner sigScanner) {
@@ -122,37 +127,7 @@ namespace XivVoices.Voice {
 
         private void InitializeServices()
         {
-            // Initialize all services that depend on the game process
-            _memoryService = new MemoryService();
-            _gameDataService = new GameDataService();
-            _animationService = new AnimationService();
-            StartServices();
         }
-
-        private async void StartServices()
-        {
-            await _memoryService.Initialize();
-            Plugin.PluginLog.Information("StartServices --> Waiting for Process Response");
-            while (!Process.GetCurrentProcess().Responding)
-                await Task.Delay(100);
-            Plugin.PluginLog.Information("StartServices --> Done waiting");
-            await _memoryService.OpenProcess(Process.GetCurrentProcess());
-            await _gameDataService.Initialize();
-
-            //LipSyncTypes = GenerateLipList().ToList();
-            await _animationService.Initialize();
-            await _animationService.Start();
-            await _memoryService.Start();
-        }
-
-        /*
-        private IEnumerable<ActionTimeline> GenerateLipList()
-        {
-            // Grab "no animation" and all "speak/" animations, which are the only ones valid in this slot
-            IEnumerable<ActionTimeline> lips = GameDataService.ActionTimelines.Where(x => x.AnimationId == 0 || (x.Key?.StartsWith("speak/") ?? false));
-            return lips;
-        }
-        */
 
         private void _clientState_TerritoryChanged(ushort obj) {
             try
@@ -167,15 +142,15 @@ namespace XivVoices.Voice {
 
         
         private void _chatGui_ChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
-            if (_plugin.Config.Active && _clientState.IsLoggedIn && bubbleCooldown.ElapsedMilliseconds >= 200 && Conditions.IsBoundByDuty) {
+            if (Plugin.Config.Active && _clientState.IsLoggedIn && bubbleCooldown.ElapsedMilliseconds >= 200 && IsBoundByDuty) {
                 if (_state == null) {
                     try
                     {
                         switch (type) {
                             case XivChatType.NPCDialogueAnnouncements:
-                                if (message.TextValue != _lastText && !Conditions.IsWatchingCutscene && !_blockAudioGeneration) {
+                                if (message.TextValue != _lastText && !IsWatchingCutscene && !_blockAudioGeneration) {
                                     _lastText = message.TextValue;
-                                    NPCText(sender.TextValue, message.TextValue.TrimStart('.'), true, !Conditions.IsBoundByDuty);
+                                    NPCText(sender.TextValue, message.TextValue.TrimStart('.'), true, !IsBoundByDuty);
 #if DEBUG
                                     _plugin.Chat.Print("Sent audio from NPC chat.");
 #endif
@@ -196,9 +171,9 @@ namespace XivVoices.Voice {
 
         unsafe private IntPtr NPCBubbleTextDetour(IntPtr pThis, FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject* pActor, IntPtr pString, bool param3, int attachmentPointID)
         {
-            if (_plugin.Config.Active)
+            if (Plugin.Config.Active)
             try {
-                if (_clientState.IsLoggedIn && !Conditions.IsWatchingCutscene && !Conditions.IsWatchingCutscene78) {
+                if (_clientState.IsLoggedIn && !IsWatchingCutscene && !IsWatchingCutscene78) {
                     if (pString != IntPtr.Zero &&
                     !Service.ClientState.IsPvPExcludingDen) {
                         if (pActor == null || (ObjectKind)pActor->GetObjectKind() != ObjectKind.Player) {
@@ -229,24 +204,24 @@ namespace XivVoices.Voice {
                                                     speakerName.TextValue +
                                                     character->BaseId;
                                             ICharacter characterObject = GetCharacterFromId(character->GameObject.EntityId);
-                                            string finalName = characterObject != null && !string.IsNullOrEmpty(characterObject.Name.TextValue) && Conditions.IsBoundByDuty ? characterObject.Name.TextValue : nameID;
+                                            string finalName = characterObject != null && !string.IsNullOrEmpty(characterObject.Name.TextValue) && IsBoundByDuty ? characterObject.Name.TextValue : nameID;
                                             if (npcBubbleInformaton.MessageText.TextValue != _lastText) {
 
                                                 string id = character->BaseId.ToString();
                                                 string skeleton = character->ModelContainer.ModelSkeletonId.ToString();
                                                 
 
-                                                if (_plugin.Config.BubblesEverywhere && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                if (Plugin.Config.BubblesEverywhere && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
                                                 }
-                                                else if (Conditions.IsBoundByDuty && _plugin.Config.BubblesInBattleZones && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                else if (IsBoundByDuty && Plugin.Config.BubblesInBattleZones && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
                                                 }
-                                                else if (!Conditions.IsBoundByDuty && _plugin.Config.BubblesInSafeZones && !Conditions.IsOccupiedInCutSceneEvent && !Conditions.IsOccupiedInEvent && !Conditions.IsOccupiedInQuestEvent)
+                                                else if (!IsBoundByDuty && Plugin.Config.BubblesInSafeZones && !IsOccupiedInCutSceneEvent && !IsOccupiedInEvent && !IsOccupiedInQuestEvent)
                                                 {
                                                     NPCText(finalName, id, skeleton, npcBubbleInformaton.MessageText.TextValue, character->DrawData.CustomizeData.Sex == 1,
                                                         character->DrawData.CustomizeData.Race, character->DrawData.CustomizeData.BodyType, character->DrawData.CustomizeData.Tribe, character->DrawData.CustomizeData.EyeShape, character->GameObject.Position);
@@ -284,7 +259,7 @@ namespace XivVoices.Voice {
             if (!disposed)
                 try {
                     if (_clientState != null) {
-                        if (_clientState.IsLoggedIn && _plugin.Config.Active) {
+                        if (_clientState.IsLoggedIn && Plugin.Config.Active) {
                             // Filter ------------------------------------------
                             if (_plugin.Filter.IsCutsceneDetectionNull())
                             {
@@ -439,18 +414,12 @@ namespace XivVoices.Voice {
 
         public async void TriggerLipSync(ICharacter character, string length, bool forceAnim = false, ushort anim = 0)
         {
-            
-            if (Conditions.IsBoundByDuty && !Conditions.IsWatchingCutscene) return;
-            if (!_plugin.Config.Active) return;
+            if (IsBoundByDuty && !IsWatchingCutscene) return;
+            if (!Plugin.Config.Active) return;
 
-            ActorMemory actorMemory = null;
-            AnimationMemory animationMemory = null;
             if (character != null)
             {
                 Plugin.PluginLog.Information("Starting LipSync");
-                actorMemory = new ActorMemory();
-                actorMemory.SetAddress(character.Address);
-                animationMemory = actorMemory.Animation;
 
                 // Determine the duration based on the message size
                 float duration = float.Parse(length, CultureInfo.InvariantCulture);
@@ -478,8 +447,8 @@ namespace XivVoices.Voice {
                 _plugin.Log($"durationMs[{durationMs}] durationRounded[{durationRounded}] fours[{mouthMovement[6]}] twos[{mouthMovement[5]}] ones[{mouthMovement[4]}]");
 
                 // Decide on the Mode
-                ActorMemory.CharacterModes intialState = actorMemory.CharacterMode;
-                ActorMemory.CharacterModes mode = ActorMemory.CharacterModes.EmoteLoop;
+                Lipsync.CharacterMode initialCharacterMode = Lipsync.GetCharacterMode(character.Address);
+                Lipsync.CharacterMode characterMode = Lipsync.CharacterMode.EmoteLoop;
 
                 if (!taskCancellations.ContainsKey(character.ToString()))
                 {
@@ -493,11 +462,10 @@ namespace XivVoices.Voice {
                             await Task.Delay(100, token);
 
                             // 4-Second Lips Movement Animation
-                            if(!token.IsCancellationRequested && mouthMovement[6] > 0 && character != null && actorMemory != null && actorMemory != null)
+                            if(!token.IsCancellationRequested && mouthMovement[6] > 0 && character != null)
                             {
-                                animationMemory.LipsOverride = forceAnim? anim : (ushort)631;
-                                MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)631, "Lipsync");
+                                Lipsync.SetCharacterMode(character.Address, characterMode);
+                                Lipsync.SetLipsOverride(character.Address, SpeakNormalLong);
 
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[6] * 4000, 6);
 #if DEBUG
@@ -507,26 +475,24 @@ namespace XivVoices.Voice {
 
                                 await Task.Delay(adjustedDelay, token);
 
-                                if (!token.IsCancellationRequested && character != null && actorMemory != null)
+                                if (!token.IsCancellationRequested && character != null)
                                 {
 #if DEBUG
                                     _chatGui.Print($"Task mouthMovement[6] was finished");
 #endif
                                     _plugin.Log($"Task mouthMovement[6] was finished");
 
-                                    animationMemory.LipsOverride = 0;
-                                    MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), intialState, "Animation Mode Override");
-                                    MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
+                                    Lipsync.SetLipsOverride(character.Address, 0);
                                 }
 
                             }
 
                             // 2-Second Lips Movement Animation
-                            if (!token.IsCancellationRequested && mouthMovement[5] > 0 && character != null && actorMemory != null)
+                            if (!token.IsCancellationRequested && mouthMovement[5] > 0 && character != null)
                             {
-                                animationMemory.LipsOverride = forceAnim ? anim : (ushort)630;
-                                MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)630, "Lipsync");
+                                Lipsync.SetCharacterMode(character.Address, characterMode);
+                                Lipsync.SetLipsOverride(character.Address, SpeakNormalMiddle);
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[5] * 2000, 5);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[5] durationMs[{mouthMovement[5] * 2}] delay [{adjustedDelay}]");
@@ -534,26 +500,24 @@ namespace XivVoices.Voice {
                                 _plugin.Log($"Task was started mouthMovement[5] durationMs[{mouthMovement[5] * 2}] delay [{adjustedDelay}]");
 
                                 await Task.Delay(adjustedDelay, token);
-                                if (!token.IsCancellationRequested && character != null && actorMemory != null)
+                                if (!token.IsCancellationRequested && character != null)
                                 {
 #if DEBUG
                                     _chatGui.Print($"Task mouthMovement[5] was finished");
 #endif
                                     _plugin.Log($"Task mouthMovement[5] was finished");
 
-                                    animationMemory.LipsOverride = 0;
-                                    MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), intialState, "Animation Mode Override");
-                                    MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
+                                    Lipsync.SetLipsOverride(character.Address, 0);
                                 }
 
                             }
 
                             // 1-Second Lips Movement Animation
-                            if (!token.IsCancellationRequested && mouthMovement[4] > 0 && character != null && actorMemory != null)
+                            if (!token.IsCancellationRequested && mouthMovement[4] > 0 && character != null)
                             {
-                                animationMemory.LipsOverride = forceAnim ? anim : (ushort)632;
-                                MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), mode, "Animation Mode Override");
-                                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), forceAnim ? anim : (ushort)632, "Lipsync");
+                                Lipsync.SetCharacterMode(character.Address, characterMode);
+                                Lipsync.SetLipsOverride(character.Address, SpeakNormalShort);
                                 int adjustedDelay = CalculateAdjustedDelay(mouthMovement[4]*1000, 4);
 #if DEBUG
                                 _chatGui.Print($"Task was started mouthMovement[4] durationMs[{mouthMovement[4]}] delay [{adjustedDelay}]");
@@ -562,16 +526,15 @@ namespace XivVoices.Voice {
 
 
                                 await Task.Delay(adjustedDelay, token);
-                                if (!token.IsCancellationRequested && character != null && actorMemory != null)
+                                if (!token.IsCancellationRequested && character != null && character != null)
                                 {
 #if DEBUG
                                     _chatGui.Print($"Task mouthMovement[4] was finished");
 #endif
                                     _plugin.Log($"Task mouthMovement[4] was finished");
 
-                                    animationMemory.LipsOverride = 0;
-                                    MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), intialState, "Animation Mode Override");
-                                    MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                                    Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
+                                    Lipsync.SetLipsOverride(character.Address, 0);
                                 }
                             }
 
@@ -597,9 +560,8 @@ namespace XivVoices.Voice {
                             _plugin.Log($"Task was canceled.");
                             Plugin.PluginLog.Information("LipSync was canceled");
 
-                            animationMemory.LipsOverride = 0;
-                            MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), intialState, "Animation Mode Override");
-                            MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                            Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
+                            Lipsync.SetLipsOverride(character.Address, 0);
                             cts.Dispose();
                             if (taskCancellations.ContainsKey(character.ToString()))
                                 taskCancellations.Remove(character.ToString());
@@ -608,21 +570,15 @@ namespace XivVoices.Voice {
                         {
                             Plugin.PluginLog.Error($"Unhandled exception in TriggerLipSync task: {ex}");
 
-                            animationMemory.LipsOverride = 0;
-                            MemoryService.Write(actorMemory.GetAddressOfProperty(nameof(ActorMemory.CharacterModeRaw)), intialState, "Animation Mode Override");
-                            MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                            Lipsync.SetCharacterMode(character.Address, initialCharacterMode);
+                            Lipsync.SetLipsOverride(character.Address, 0);
                             cts.Dispose();
                             if(taskCancellations.ContainsKey(character.ToString()))
                                 taskCancellations.Remove(character.ToString());
                         }
                     }, token);
                 }
-                
-                
-
-
             }
-            
         }
 
         int CalculateAdjustedDelay(int durationMs, int lipSyncType)
@@ -654,9 +610,8 @@ namespace XivVoices.Voice {
 
         public async void StopLipSync(ICharacter character)
         {
-            
-            if (Conditions.IsBoundByDuty && !Conditions.IsWatchingCutscene) return;
-            if (!_plugin.Config.Active) return;
+            if (IsBoundByDuty && !IsWatchingCutscene) return;
+            if (!Plugin.Config.Active) return;
             if (character == null) return;
 
             Plugin.PluginLog.Information("StopLipSync started");
@@ -683,17 +638,12 @@ namespace XivVoices.Voice {
             try
             {
                 Plugin.PluginLog.Information("StopLipSync writing memory");
-                var actorMemory = new ActorMemory();
-                actorMemory.SetAddress(character.Address);
-                var animationMemory = actorMemory.Animation;
-                animationMemory.LipsOverride = 630; // LipSyncTypes[5].Timeline.AnimationId
-                MemoryService.Write(animationMemory.GetAddressOfProperty(nameof(AnimationMemory.LipsOverride)), 0, "Lipsync");
+                Lipsync.SetLipsOverride(character.Address, 0);
             }
             catch (Exception ex)
             {
                 Plugin.PluginLog.Error($"Error writing memory for {character.Name}, report it!");
             }
-
         }
 
         public int EstimateDurationFromMessage(string message)
@@ -706,7 +656,7 @@ namespace XivVoices.Voice {
 
 
         private async void NPCText(string npcName, string message, bool ignoreAutoProgress, bool lowLatencyMode = false) {
-            if (!_plugin.Config.Active) return;
+            if (!Plugin.Config.Active) return;
             try {
                 uint id = 0;
                 int skeleton = 0;
@@ -727,9 +677,9 @@ namespace XivVoices.Voice {
                 string nameToUse = npcObject != null ? npcObject.Name.ToString() : npcName;
                 string correctedMessage = CleanSentence(message);
                 string correctSender = CleanSender(nameToUse);
-                if (lastNPCDialogue == npcName + correctedMessage) return; //Required for Hide Talk Addon so it doesnt repeat lines
+                if (Plugin.Config.TextAutoHideEnabled && lastNPCDialogue == npcName + correctedMessage) return; //Required for Hide Talk Addon so it doesnt repeat lines
                 string genderType = gender ? "Female":"Male";
-                string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
+                string user = $"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
                 Engine.XivEngine.Instance.Process("Dialogue", correctSender, id.ToString(), skeleton.ToString(), correctedMessage, body.ToString(), genderType, race.ToString(), tribe.ToString(), eyes.ToString(), _clientState.ClientLanguage.ToString(), new Vector3(-99), npcObject as ICharacter, user);
 
@@ -742,7 +692,7 @@ namespace XivVoices.Voice {
         }
         
         private async void NPCText(string name, string id, string skeleton, string message, bool gender, byte race, byte body, byte tribe, byte eyes, Vector3 position) {
-            if (!_plugin.Config.Active || !_plugin.Config.BubblesEnabled) return;
+            if (!Plugin.Config.Active || !Plugin.Config.BubblesEnabled) return;
             try {
                 
                 if (_plugin.PlayerCamera.Forward == null)
@@ -784,9 +734,9 @@ namespace XivVoices.Voice {
 
                 if (lastBattleDialogue != correctedMessage)
                 {
-                    string user = $"{_plugin.ClientState.LocalPlayer.Name}@{_plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
+                    string user = $"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
-                    if(_plugin.Config.BubbleChatEnabled)
+                    if(Plugin.Config.BubbleChatEnabled)
                         _plugin.Chat.Print(new XivChatEntry
                         {
                             Name = correctSender,
@@ -911,11 +861,6 @@ namespace XivVoices.Voice {
             //_chatGui.ChatMessage -= _chatGui_ChatMessage;
             _clientState.TerritoryChanged -= _clientState_TerritoryChanged;
             disposed = true;
-
-            _memoryService?.Shutdown();
-            _gameDataService?.Shutdown();
-            _animationService?.Shutdown();
-            _openChatBubbleHook?.Dispose();
         }
 
         public class UserAnimationOverride

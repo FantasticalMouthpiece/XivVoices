@@ -31,7 +31,7 @@ namespace XivVoices.Engine
         public string ToolsPath { get { return "C:/XIV_Voices/Tools";  } }
         public string Firstname { get; } = "_FIRSTNAME_";
         public string Lastname { get; } = "_LASTNAME_";
-        public Dictionary<string, XivNPC> NpcData { get; set; }
+        public Dictionary<string, XivNPC?> NpcData { get; set; }
         public Dictionary<string, PlayerCharacter> PlayerData { get; set; }
         public List<string> NpcsWithRetainerLines { get; set; } = new List<string>()
             {
@@ -297,10 +297,10 @@ namespace XivVoices.Engine
             string pathWith_Data = _pluginInterface.AssemblyLocation.DirectoryName;
             RootPath = Path.GetDirectoryName(pathWith_Data);
             
-            string directory = this.Plugin.Config.WorkingDirectory;
+            string directory = Plugin.Config.WorkingDirectory;
             DirectoryPath = directory;
 
-            this.Plugin.Config.Initialized = false;
+            Plugin.Config.Initialized = false;
             bool dataAndToolsExist = true;
 
             // Check for Data folder
@@ -335,7 +335,7 @@ namespace XivVoices.Engine
 
 
             if (dataAndToolsExist)
-                this.Plugin.Config.Initialized = true;
+                Plugin.Config.Initialized = true;
 
             
 
@@ -347,7 +347,7 @@ namespace XivVoices.Engine
 
         public void UpdateDirectory()
         {
-            DirectoryPath = this.Plugin.Config.WorkingDirectory;
+            DirectoryPath = Plugin.Config.WorkingDirectory;
 
             if (!Directory.Exists(DirectoryPath))
             {
@@ -494,7 +494,7 @@ namespace XivVoices.Engine
             NpcData = ReadResourceNPCs(resourceName);
             if (NpcData == null)
             {
-                NpcData = new Dictionary<string, XivNPC>();
+                NpcData = new Dictionary<string, XivNPC?>();
                 Plugin.PluginLog.Error("Something is wrong with the NPC database");
             }
         }
@@ -653,7 +653,7 @@ namespace XivVoices.Engine
         }
 
 
-        public Dictionary<string, XivNPC> ReadResourceNPCs(string resourceName)
+        public Dictionary<string, XivNPC?> ReadResourceNPCs(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceStream = assembly.GetManifestResourceStream(resourceName);
@@ -866,9 +866,10 @@ namespace XivVoices.Engine
             return filePath + ".ogg";
         }
 
-        public string VoiceDataExists(string voiceName, string speaker, string sentence)
+        // a bunch of old genereated lines that have "<yawn>" or other text in angled brackets actually just removed the brackets but not the text in the filename, so search for both.
+        public string VoiceDataExists(string voiceName, string speaker, string sentence, bool retryWithBracketText = true)
         {
-            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence);
+            string cleanedSentence = CleanedSentenceAndSpeakerForFile(voiceName, ref speaker, sentence, !retryWithBracketText);
 
             string actorDirectory   = VoiceFilesPath   + "/" + voiceName;
             string speakerDirectory = actorDirectory   + "/" + speaker;
@@ -904,15 +905,22 @@ namespace XivVoices.Engine
                     return filePath + ".ogg";
             }
             else
-                return null;
+            {
+              if (retryWithBracketText) return VoiceDataExists(voiceName, speaker, sentence, false);
+              else return null;
+            }
         }
 
-        public string CleanedSentenceAndSpeakerForFile(string voiceName, ref string speaker, string sentence)
+        public string CleanedSentenceAndSpeakerForFile(string voiceName, ref string speaker, string sentence, bool keepBracketText = false)
         {
             speaker = Regex.Replace(speaker, @"[^a-zA-Z0-9 _-]", "").Replace(" ", "_").Replace("-", "_");
             
             // Create a Path
-            string cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
+            string cleanedSentence;
+
+            if (keepBracketText) cleanedSentence = Regex.Replace(sentence, @"<([^<>]*)>", "$1");
+            else cleanedSentence = Regex.Replace(sentence, "<[^<]*>", "");
+
             cleanedSentence = RemoveSymbolsAndLowercase(cleanedSentence);
 
             int missingFromDirectoryPath = 0;
@@ -952,7 +960,7 @@ namespace XivVoices.Engine
             return stringBuilder.ToString();
         }
 
-        public XivNPC GetNPC(string npcName, string npcId, TTSData ttsData, ref bool fetchedByID)
+        public XivNPC? GetNPC(string npcName, string npcId, TTSData ttsData, ref bool fetchedByID)
         {
             // Handle Bubbles
             if (ttsData != null && npcName == "Bubble")
@@ -960,7 +968,7 @@ namespace XivVoices.Engine
                 // TODO: Check if the bubble belongs to one of the main characters by making a list
 
                 Plugin.PluginLog.Information("GetNPC: " + npcName + " - " + npcId + " --> Grabbed Bubble");
-                XivNPC npc = new XivNPC();
+                XivNPC? npc = new XivNPC();
                 npc.Gender = ttsData.Gender;
                 npc.Race = ttsData.Race;
                 npc.Tribe = ttsData.Tribe;
@@ -989,7 +997,7 @@ namespace XivVoices.Engine
             else if (ttsData != null && ttsData.Body == "Beastman")
             {
                 Plugin.PluginLog.Information("GetNPC: " + npcName + ", Beast Tribe: " + ttsData.Race + " --> Grabbed NpcData");
-                XivNPC npc = new XivNPC();
+                XivNPC? npc = new XivNPC();
                 npc.Gender = ttsData.Gender;
                 npc.Race = ttsData.Race;
                 npc.Tribe = ttsData.Tribe;
@@ -1014,7 +1022,7 @@ namespace XivVoices.Engine
             {
                 msg.Speaker = Nameless[msg.Sentence];
             }
-            else if (this.Plugin.Config.FrameworkActive)
+            else if (Plugin.Config.FrameworkActive)
             {
                 string filePath = DirectoryPath + "/nameless.json";
                 Nameless[msg.Sentence] = msg.Speaker;

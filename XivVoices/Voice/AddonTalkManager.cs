@@ -34,7 +34,7 @@ namespace XivVoices.Voice {
             return addonTalk != null && (addonTalk->AtkUnitBase.IsVisible = true) == true;
         }
 
-        private unsafe AddonTalk* GetAddonTalk() {
+        public unsafe AddonTalk* GetAddonTalk() {
             return (AddonTalk*)Address.ToPointer();
         }
 

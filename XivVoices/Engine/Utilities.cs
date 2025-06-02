@@ -24,7 +24,7 @@ namespace XivVoices.Engine
             Position = position;
             Character = character;
             User = user;
-            Region = XivEngine.Instance.Database.Plugin.ClientState.TerritoryType;
+            Region = Plugin.ClientState.TerritoryType;
         }
 
         public TTSData() {
@@ -88,7 +88,7 @@ namespace XivVoices.Engine
         public string FilePath = "";
         public string Network = "";
         public string VoiceName;
-        public XivNPC NPC = null;
+        public XivNPC? NPC = null;
 
         public bool Ignored;
         public bool Reported;

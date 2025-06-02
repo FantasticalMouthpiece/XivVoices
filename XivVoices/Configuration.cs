@@ -9,11 +9,6 @@ namespace XivVoices;
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
-    private const string ConfigPath = "C:/XIV_Voices/Tools/config.json";
-
-    // the below exist just to make saving less cumbersome
-    [NonSerialized] private IDalamudPluginInterface? PluginInterface;
-
     public bool Active { get; set; } = true;
     public bool Initialized { get; set; }
     public string WorkingDirectory { get; set; } = "C:/XIV_Voices";
@@ -53,6 +48,7 @@ public class Configuration : IPluginConfiguration
     public string LocalTTSFemale { get; set; } = "en-gb-jenny_dioco-medium";
     public int LocalTTSUngendered { get; set; } = 1;
     public int LocalTTSVolume { get; set; } = 100;
+    public int LocalTTSSpeed { get; set; } = 100;
     public bool LocalTTSPlayerSays { get; set; }
     public bool IgnoreNarratorLines { get; set; }
 
@@ -61,89 +57,84 @@ public class Configuration : IPluginConfiguration
     public bool FrameworkOnline { get; set; }
     public int Version { get; set; }
 
-    public void Initialize(IDalamudPluginInterface pluginInterface)
+    // Wine Settings
+    public bool WineUseNativeFFmpeg { get; set; } = true;
+
+    // Internal
+    public bool ConfigMigrated { get; set; } = false;
+
+    // Experimental
+    public bool ExperimentalAutoAdvance { get; set; } = true;
+
+    public void Initialize()
     {
-        PluginInterface = pluginInterface;
-        Load();
+      string configPath = $"C:/XIV_Voices/Tools/config.json"; // was hardcoded to C:\ previously, so we stick with it.
+      if (!File.Exists(configPath))
+      {
+        ConfigMigrated = true;
+        Save();
+      }
+      
+      if (!ConfigMigrated)
+      {
+        Plugin.PluginLog.Information($"Migrating configuration: {configPath}");
+        var jsonString = File.ReadAllText(configPath);
+        var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
+        if (loadedConfig != null)
+        {
+          Active = loadedConfig.Active;
+          Initialized = loadedConfig.Initialized;
+          WorkingDirectory = loadedConfig.WorkingDirectory;
+          Reports = loadedConfig.Reports;
+          AnnounceReports = loadedConfig.AnnounceReports;
+          OnlineRequests = loadedConfig.OnlineRequests;
+          ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
+          LipsyncEnabled = loadedConfig.LipsyncEnabled;
+          SkipEnabled = loadedConfig.SkipEnabled;
+          TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
+          TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
+          TextAutoHideOnlyInCutscenes = loadedConfig.TextAutoHideOnlyInCutscenes;
+          SayEnabled = loadedConfig.SayEnabled;
+          TellEnabled = loadedConfig.TellEnabled;
+          ShoutEnabled = loadedConfig.ShoutEnabled;
+          PartyEnabled = loadedConfig.PartyEnabled;
+          AllianceEnabled = loadedConfig.AllianceEnabled;
+          FreeCompanyEnabled = loadedConfig.FreeCompanyEnabled;
+          LinkshellEnabled = loadedConfig.LinkshellEnabled;
+          BattleDialoguesEnabled = loadedConfig.BattleDialoguesEnabled;
+          RetainersEnabled = loadedConfig.RetainersEnabled;
+          BubblesEnabled = loadedConfig.BubblesEnabled;
+          BubblesEverywhere = loadedConfig.BubblesEverywhere;
+          BubblesInSafeZones = loadedConfig.BubblesInSafeZones;
+          BubblesInBattleZones = loadedConfig.BubblesInBattleZones;
+          BubbleChatEnabled = loadedConfig.BubbleChatEnabled;
+          Mute = loadedConfig.Mute;
+          Volume = loadedConfig.Volume;
+          Speed = loadedConfig.Speed;
+          AudioEngine = loadedConfig.AudioEngine;
+          PollyEnabled = loadedConfig.PollyEnabled;
+          LocalTTSEnabled = loadedConfig.LocalTTSEnabled;
+          LocalTTSMale = loadedConfig.LocalTTSMale;
+          LocalTTSFemale = loadedConfig.LocalTTSFemale;
+          LocalTTSUngendered = loadedConfig.LocalTTSUngendered;
+          LocalTTSVolume = loadedConfig.LocalTTSVolume;
+          LocalTTSPlayerSays = loadedConfig.LocalTTSPlayerSays;
+          IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
+          ConfigMigrated = true;
+          Save();
+          try {
+            File.Delete(configPath);
+          } catch (Exception ex) {
+            Plugin.PluginLog.Error($"Failed to delete configuration: {configPath} - {ex}");
+          }
+        }
+      }
+
+      // Disabled until bug is fixed.
+      TextAutoHideEnabled = false;
+      TextAutoHideOnlyInCutscenes = false;
     }
 
-    private void Load()
-    {
-        try
-        {
-            if (!File.Exists(ConfigPath)) return;
-
-            // Read and deserialize the JSON file
-            var jsonString = File.ReadAllText(ConfigPath);
-            var loadedConfig = JsonSerializer.Deserialize<Configuration>(jsonString);
-
-            if (loadedConfig == null) return;
-
-            // Update the current instance with loaded data
-            Active = loadedConfig.Active;
-            Initialized = loadedConfig.Initialized;
-            WorkingDirectory = loadedConfig.WorkingDirectory;
-            Reports = loadedConfig.Reports;
-            AnnounceReports = loadedConfig.AnnounceReports;
-            OnlineRequests = loadedConfig.OnlineRequests;
-            ReplaceVoicedARRCutscenes = loadedConfig.ReplaceVoicedARRCutscenes;
-            LipsyncEnabled = loadedConfig.LipsyncEnabled;
-            SkipEnabled = loadedConfig.SkipEnabled;
-            TextAutoAdvanceEnabled = loadedConfig.TextAutoAdvanceEnabled;
-            // TextAutoHideEnabled = loadedConfig.TextAutoHideEnabled;
-            // TextAutoHideOnlyInCutscenes = loadedConfig.TextAutoHideOnlyInCutscenes;
-            
-            // Disabled until bug is fixed.
-            TextAutoHideEnabled = false;
-            TextAutoHideOnlyInCutscenes = false;
-            
-            SayEnabled = loadedConfig.SayEnabled;
-            TellEnabled = loadedConfig.TellEnabled;
-            ShoutEnabled = loadedConfig.ShoutEnabled;
-            PartyEnabled = loadedConfig.PartyEnabled;
-            AllianceEnabled = loadedConfig.AllianceEnabled;
-            FreeCompanyEnabled = loadedConfig.FreeCompanyEnabled;
-            LinkshellEnabled = loadedConfig.LinkshellEnabled;
-            BattleDialoguesEnabled = loadedConfig.BattleDialoguesEnabled;
-            RetainersEnabled = loadedConfig.RetainersEnabled;
-            BubblesEnabled = loadedConfig.BubblesEnabled;
-            BubblesEverywhere = loadedConfig.BubblesEverywhere;
-            BubblesInSafeZones = loadedConfig.BubblesInSafeZones;
-            BubblesInBattleZones = loadedConfig.BubblesInBattleZones;
-            BubbleChatEnabled = loadedConfig.BubbleChatEnabled;
-            Mute = loadedConfig.Mute;
-            Volume = loadedConfig.Volume;
-            Speed = loadedConfig.Speed;
-            AudioEngine = loadedConfig.AudioEngine;
-            PollyEnabled = loadedConfig.PollyEnabled;
-            LocalTTSEnabled = loadedConfig.LocalTTSEnabled;
-            LocalTTSMale = loadedConfig.LocalTTSMale;
-            LocalTTSFemale = loadedConfig.LocalTTSFemale;
-            LocalTTSUngendered = loadedConfig.LocalTTSUngendered;
-            LocalTTSVolume = loadedConfig.LocalTTSVolume;
-            LocalTTSPlayerSays = loadedConfig.LocalTTSPlayerSays;
-            IgnoreNarratorLines = loadedConfig.IgnoreNarratorLines;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading configuration: {ex.Message}");
-        }
-    }
-
-    public void Save()
-    {
-        try
-        {
-            // Ensure the directory exists
-            Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
-
-            // Serialize the current configuration to JSON
-            var jsonString = JsonSerializer.Serialize(this);
-            File.WriteAllText(ConfigPath, jsonString);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving configuration: {ex.Message}");
-        }
-    }
+    public void Save() =>
+      Plugin.Interface.SavePluginConfig(this);
 }

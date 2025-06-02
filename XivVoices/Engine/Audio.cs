@@ -75,7 +75,7 @@ namespace XivVoices.Engine
                     Plugin.PluginLog.Information($"PlayAudio ---> audioinfo receieved");
 
                     audioIsStopped = false;
-                    if (!this.Plugin.Config.Mute)
+                    if (!Plugin.Config.Mute)
                     {
                         if (!xivMessage.Ignored && xivMessage.TtsData != null)
                             Plugin.TriggerLipSync(xivMessage.TtsData.Character, waveStream.TotalTime.TotalSeconds.ToString());
@@ -167,14 +167,14 @@ namespace XivVoices.Engine
                     PanningSampleProvider panningProvider = new PanningSampleProvider(volumeProvider);
 
                     var audioInfo = GetAudioInfo(xivMessage, type);
-                    ushort initialRegion = this.Plugin.ClientState.TerritoryType;
+                    ushort initialRegion = Plugin.ClientState.TerritoryType;
 
-                    if (!this.Plugin.Config.Mute)
+                    if (!Plugin.Config.Mute)
                     {
                         using (var audioOutput = GetAudioEngine())
                         {
                             audioOutput.Init(panningProvider);
-                            var data = GetDistanceAndBalance(xivMessage.TtsData.Position);
+                            var data = await GetDistanceAndBalance(xivMessage.TtsData.Position);
                             volumeProvider.Volume = AdjustVolume(data.Distance);
                             panningProvider.Pan = data.Balance;
                             audioOutput.Play();
@@ -184,13 +184,13 @@ namespace XivVoices.Engine
                             {
                                 var currentPosition = waveStream.CurrentTime.TotalMilliseconds;
                                 audioInfo.percentage = (float)(currentPosition / totalDuration);
-                                if (initialRegion != this.Plugin.ClientState.TerritoryType)
+                                if (initialRegion != Plugin.ClientState.TerritoryType)
                                 {
                                     audioOutput.Stop();
                                     break;
                                 }
 
-                                data = GetDistanceAndBalance(xivMessage.TtsData.Position);
+                                data = await GetDistanceAndBalance(xivMessage.TtsData.Position);
                                 volumeProvider.Volume = AdjustVolume(data.Distance);
                                 panningProvider.Pan = data.Balance;
 
@@ -242,7 +242,7 @@ namespace XivVoices.Engine
             try
             {
                 var volumeProvider = new VolumeSampleProvider(waveStream.ToSampleProvider());
-                if (!this.Plugin.Config.Mute)
+                if (!Plugin.Config.Mute)
                 {
                     using (var audioOutput = GetAudioEngine())
                     {
@@ -274,7 +274,7 @@ namespace XivVoices.Engine
 
         IWavePlayer GetAudioEngine()
         {
-            switch (this.Plugin.Config.AudioEngine)
+            switch (Plugin.Config.AudioEngine)
             {
                 case 1:
                     return new DirectSoundOut();
@@ -302,6 +302,7 @@ namespace XivVoices.Engine
             }
         }
 
+        private unsafe bool IsBoundByDuty { get => Conditions.Instance()->BoundByDuty; }
         float AdjustVolume(float distance)
         {
             try
@@ -314,7 +315,7 @@ namespace XivVoices.Engine
                     (5f, 20f, volume*0.3f, volume*0.05f)     // 5 to 20 units: 30% to 5%
                 };
 
-                if (Conditions.IsBoundByDuty)
+                if (IsBoundByDuty)
                 {
                     volumeRanges[0].volumeStart = 0.65f;
                     volumeRanges[0].volumeEnd = 0.63f;  // 0 to 3 units: 65% to 63%
@@ -377,17 +378,19 @@ namespace XivVoices.Engine
             }
         }
 
-        (float Distance,float Balance) GetDistanceAndBalance(Vector3 speakerPosition)
+        async Task<(float Distance,float Balance)> GetDistanceAndBalance(Vector3 speakerPosition)
         {
             try
             {
+                var playerPosition = await Plugin._framework.RunOnFrameworkThread(() => Plugin.ClientState.LocalPlayer.Position);
+
                 // Update camera vectors
                 Vector3 cameraForward = Vector3.Normalize(Plugin.PlayerCamera.Forward);
                 Vector3 cameraUp = Vector3.Normalize(Plugin.PlayerCamera.Top);
                 Vector3 cameraRight = Vector3.Normalize(Vector3.Cross(cameraUp, cameraForward));
 
                 // Calculate relative position from player to speaker
-                Vector3 relativePosition = speakerPosition - Plugin.ClientState.LocalPlayer.Position;
+                Vector3 relativePosition = speakerPosition - playerPosition;
 
                 // Distance for volume adjustment
                 float distance = relativePosition.Length();

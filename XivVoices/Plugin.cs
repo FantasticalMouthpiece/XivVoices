@@ -29,6 +29,7 @@ using XivVoices.Attributes;
 using XivVoices.Engine;
 using XivVoices.Services;
 using XivVoices.Voice;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 //using FFXIVClientStructs.FFXIV.Client.Game.Housing;
 using ICharacter = Dalamud.Game.ClientState.Objects.Types.ICharacter;
 
@@ -46,8 +47,8 @@ public class Plugin : IDalamudPlugin
     private readonly IObjectTable _objectTable;
     private IToastGui _toast;
     private IGameConfig _gameConfig;
-    private readonly IFramework _framework;
-    private bool texturesLoaded;
+    public static IFramework _framework { get; set; }
+    public IKeyState KeyState { get; set; }
 
     private readonly PluginCommandManager<Plugin> commandManager;
 
@@ -74,20 +75,6 @@ public class Plugin : IDalamudPlugin
     private int _recentCFPop;
     private unsafe Camera* _camera;
 
-    public ISharedImmediateTexture Logo;
-    public ISharedImmediateTexture Icon;
-    public ISharedImmediateTexture GeneralSettings;
-    public ISharedImmediateTexture GeneralSettingsActive;
-    public ISharedImmediateTexture DialogueSettings;
-    public ISharedImmediateTexture DialogueSettingsActive;
-    public ISharedImmediateTexture AudioSettings;
-    public ISharedImmediateTexture AudioSettingsActive;
-    public ISharedImmediateTexture Archive;
-    public ISharedImmediateTexture ArchiveActive;
-    public ISharedImmediateTexture Discord;
-    public ISharedImmediateTexture KoFi;
-    public ISharedImmediateTexture Changelog;
-    public ISharedImmediateTexture ChangelogActive;
     public string Name => "XivVoices Plugin";
 
     public ISigScanner SigScanner { get; set; }
@@ -109,23 +96,25 @@ public class Plugin : IDalamudPlugin
 
     public IGameInteropProvider InteropProvider { get; set; }
 
-    public Configuration Config { get; }
+    public static Configuration Config { get; set; }
 
     public PluginWindow Window => _window;
 
     public MediaCameraObject PlayerCamera { get; private set; }
 
-    public IDalamudPluginInterface Interface { get; }
+    public static IDalamudPluginInterface Interface { get; set; }
 
     public IChatGui Chat { get; }
 
-    public IClientState ClientState { get; }
+    public static IClientState ClientState { get; set; }
 
-    public ITextureProvider TextureProvider { get; }
+    public static ITextureProvider TextureProvider { get; set; }
 
     public AddonTalkHandler AddonTalkHandler { get; set; }
 
     public static IPluginLog PluginLog { get; set; }
+
+    public static FFmpeg FFmpegger { get; set; }
 
     public Updater updater;
     public Database database;
@@ -152,10 +141,12 @@ public class Plugin : IDalamudPlugin
         IGameGui gameGui,
         IDragDropManager dragDrop,
         IPluginLog pluginLog,
-        ITextureProvider textureProvider)
+        ITextureProvider textureProvider,
+        IKeyState keyState)
     {
         PluginLog = pluginLog;
         Chat = chat;
+        _framework = framework;
 
         #region Constructor
 
@@ -171,16 +162,16 @@ public class Plugin : IDalamudPlugin
             ClientState = clientState;
             // Get or create a configuration object
             Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
-            Config.Initialize(Interface);
+            Config.Initialize();
+            FFmpegger = new FFmpeg();
+            FFmpegger.PluginReference = this;
+            FFmpegger.Initialize();
             //webSocketServer = new XIVVWebSocketServer(this.config, this);
             // Initialize the UI
             windowSystem = new WindowSystem(typeof(Plugin).AssemblyQualifiedName);
             _window = Interface.Create<PluginWindow>();
             Interface.UiBuilder.DisableAutomaticUiHide = true;
             Interface.UiBuilder.DisableGposeUiHide = true;
-            _window.ClientState = ClientState;
-            _window.Configuration = Config;
-            _window.PluginInterface = Interface;
             _window.PluginReference = this;
             if (_window is not null) windowSystem.AddWindow(_window);
             Interface.UiBuilder.Draw += UiBuilder_Draw;
@@ -192,9 +183,9 @@ public class Plugin : IDalamudPlugin
             _gameConfig = gameConfig;
             SigScanner = scanner;
             TextureProvider = textureProvider;
+            KeyState = keyState;
             InteropProvider = interopProvider;
             _objectTable = objectTable;
-            _framework = framework;
             _framework.Update += framework_Update;
             _condition = condition;
             _gameGui = gameGui;
@@ -468,86 +459,88 @@ public class Plugin : IDalamudPlugin
 
     private void ChatText(string sender, SeString message, XivChatType type, int senderId, bool cancel = false)
     {
-        try
-        {
-            if (!Config.Active || !Config.Initialized) return;
-
-            if (sender.Length == 1)
-                sender = ClientState.LocalPlayer.Name.TextValue;
-
-            var stringtype = type.ToString();
-            var correctSender = AddonTalkHandler.CleanSender(sender);
-            var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
-
-            if (cancel)
+        _framework.RunOnFrameworkThread(() => {
+            try
             {
-                stringtype = "Cancel";
-                XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
-                    "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
-                return;
-            }
+                if (!Config.Active || !Config.Initialized) return;
 
-            // Default Parameters
-            ICharacter character = null;
-            var id = "-1";
-            var skeleton = "-1";
-            var body = "-1";
-            var gender = "default";
-            var race = "-1";
-            var tribe = "-1";
-            var eyes = "-1";
+                if (sender.Length == 1)
+                    sender = ClientState.LocalPlayer.Name.TextValue;
 
-            // Get Character Data
-            if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
-                character = ClientState.LocalPlayer;
-            else
-                character = AddonTalkHandler.GetCharacterFromName(sender);
+                var stringtype = type.ToString();
+                var correctSender = AddonTalkHandler.CleanSender(sender);
+                var user = $"{ClientState.LocalPlayer.Name}@{ClientState.LocalPlayer.HomeWorld.Value.Name}";
 
-            // Fill the Parameters
-            if (character == null)
-            {
-                if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
+                if (cancel)
                 {
-                    body = database.PlayerData[sender].Body;
-                    gender = database.PlayerData[sender].Gender;
-                    race = database.PlayerData[sender].Race;
-                    tribe = database.PlayerData[sender].Tribe;
-                    eyes = database.PlayerData[sender].EyeShape;
+                    stringtype = "Cancel";
+                    XivEngine.Instance.Process(stringtype, correctSender, "-1", "-1", message.ToString(), "-1", "-1", "-1",
+                        "-1", "-1", ClientState.ClientLanguage.ToString(), new Vector3(-99), null, user);
+                    return;
                 }
-            }
-            else
-            {
-                id = character.DataId.ToString();
-                body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
-                gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
-                race = character.Customize[(int)CustomizeIndex.Race].ToString();
-                tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
-                eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-                if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
-                    type == XivChatType.FreeCompany)
+                // Default Parameters
+                ICharacter character = null;
+                var id = "-1";
+                var skeleton = "-1";
+                var body = "-1";
+                var gender = "default";
+                var race = "-1";
+                var tribe = "-1";
+                var eyes = "-1";
+
+                // Get Character Data
+                if (sender.Contains(ClientState.LocalPlayer.Name.TextValue))
+                    character = ClientState.LocalPlayer;
+                else
+                    character = AddonTalkHandler.GetCharacterFromName(sender);
+
+                // Fill the Parameters
+                if (character == null)
                 {
-                    var playerCharacter = new PlayerCharacter
+                    if (database.PlayerData != null && database.PlayerData.ContainsKey(sender))
                     {
-                        Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
-                        Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
-                        Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
-                        Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
-                        EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
-                    };
-                    database.UpdateAndSavePlayerData(sender, playerCharacter);
+                        body = database.PlayerData[sender].Body;
+                        gender = database.PlayerData[sender].Gender;
+                        race = database.PlayerData[sender].Race;
+                        tribe = database.PlayerData[sender].Tribe;
+                        eyes = database.PlayerData[sender].EyeShape;
+                    }
                 }
-            }
+                else
+                {
+                    id = character.DataId.ToString();
+                    body = character.Customize[(int)CustomizeIndex.ModelType].ToString();
+                    gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male";
+                    race = character.Customize[(int)CustomizeIndex.Race].ToString();
+                    tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString();
+                    eyes = character.Customize[(int)CustomizeIndex.EyeShape].ToString();
 
-            //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
-            XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
-                tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
-        }
-        catch (Exception ex)
-        {
-            LogError("Error in ChatText method. " + ex);
-            PluginLog.Error($"ChatText ---> Exception: {ex}");
-        }
+                    if (type == XivChatType.TellIncoming || type == XivChatType.Party || type == XivChatType.Alliance ||
+                        type == XivChatType.FreeCompany)
+                    {
+                        var playerCharacter = new PlayerCharacter
+                        {
+                            Body = character.Customize[(int)CustomizeIndex.ModelType].ToString(),
+                            Gender = Convert.ToBoolean(character.Customize[(int)CustomizeIndex.Gender]) ? "Female" : "Male",
+                            Race = character.Customize[(int)CustomizeIndex.Race].ToString(),
+                            Tribe = character.Customize[(int)CustomizeIndex.Tribe].ToString(),
+                            EyeShape = character.Customize[(int)CustomizeIndex.EyeShape].ToString()
+                        };
+                        database.UpdateAndSavePlayerData(sender, playerCharacter);
+                    }
+                }
+
+                //Chat.Print($"{correctSender}: id[{id}] skeleton[{skeleton}] body[{body}] gender[{gender}] race[{race}] tribe[{tribe}] eyes[{eyes}]");
+                XivEngine.Instance.Process(stringtype, correctSender, id, skeleton, message.ToString(), body, gender, race,
+                    tribe, eyes, ClientState.ClientLanguage.ToString(), new Vector3(-99), character, user);
+            }
+            catch (Exception ex)
+            {
+                LogError("Error in ChatText method. " + ex);
+                PluginLog.Error($"ChatText ---> Exception: {ex}");
+            }
+        });
     }
 
 
@@ -563,10 +556,45 @@ public class Plugin : IDalamudPlugin
             AddonTalkHandler.StopLipSync(character);
     }
 
-    public void ClickTalk()
+    public unsafe void ClickTalk()
     {
-        if (Config.TextAutoAdvanceEnabled && !Config.Mute && !PlayerIsBoundByDuty() && _addonTalkManager.IsVisible())
-            SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        // Disable auto-advance temporarily when holding ALT.
+        var altHeld = KeyState[VirtualKey.MENU];
+        if (!Config.TextAutoAdvanceEnabled || !Config.Active || Config.Mute || !_addonTalkManager.IsVisible() || altHeld) return;
+
+        if (Config.ExperimentalAutoAdvance)
+        {
+          // "Experimental" because I've had this crash once, but that was likely due to
+          // it being ran off the framework thread. Haven't had a crash since.
+          // This is opt-out for now, hopefully it doesn't cause any issues.
+          _framework.RunOnFrameworkThread(() => {
+            var addonTalk = _addonTalkManager.GetAddonTalk();
+            var evt = stackalloc AtkEvent[1]
+            {
+                new()
+                {
+                    Listener = (AtkEventListener*)addonTalk,
+                    Target = &AtkStage.Instance()->AtkEventTarget,
+                    State = new()
+                    {
+                        StateFlags = (AtkEventStateFlags)132
+                    }
+                }
+            };
+            var data = stackalloc AtkEventData[1];
+            for (var i =0 ; i < sizeof(AtkEventData); i++)
+            {
+              ((byte*)data)[i] = 0;
+            }
+            addonTalk->ReceiveEvent(AtkEventType.MouseDown, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseClick, 0, evt, data);
+            addonTalk->ReceiveEvent(AtkEventType.MouseUp, 0, evt, data);
+          });
+        }
+        else
+        {
+          SetKeyValue(VirtualKey.NUMPAD0, KeyStateFlags.Pressed);
+        }
     }
 
     public void HideTalk()
@@ -628,7 +656,7 @@ public class Plugin : IDalamudPlugin
             {
                 PluginLog.Info("Sound Mod Intercepted");
 #if DEBUG
-                        _chat.Print("Sound Mod Intercepted");
+                        Chat.Print("Sound Mod Intercepted");
 #endif
             }
     }
@@ -637,7 +665,7 @@ public class Plugin : IDalamudPlugin
     private void _clientState_TerritoryChanged(ushort e)
     {
 #if DEBUG
-            _chat.Print("Territory is " + e);
+            Chat.Print("Territory is " + e);
 #endif
     }
     //private unsafe bool IsResidential() {
@@ -692,57 +720,6 @@ public class Plugin : IDalamudPlugin
 
     private void UiBuilder_Draw()
     {
-        if (!texturesLoaded)
-            try
-            {
-                var imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "logo.png"));
-                Logo = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "icon.png"));
-                Icon = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "generalSettings.png"));
-                GeneralSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "generalSettingsActive.png"));
-                GeneralSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "dialogueSettings.png"));
-                DialogueSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "dialogueSettingsActive.png"));
-                DialogueSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "audioSettings.png"));
-                AudioSettings = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "audioSettingsActive.png"));
-                AudioSettingsActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "archive.png"));
-                Archive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "archiveActive.png"));
-                ArchiveActive = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "discord.png"));
-                Discord = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!, "ko-fi.png"));
-                KoFi = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "changelog.png"));
-                Changelog = TextureProvider.GetFromFile(imagePath);
-                imagePath = new FileInfo(Path.Combine(Interface.AssemblyLocation.Directory?.FullName!,
-                    "changelogActive.png"));
-                ChangelogActive = TextureProvider.GetFromFile(imagePath);
-                if (Logo != null)
-                {
-                    _window.InitializeImageHandles();
-                    texturesLoaded = true; // Set the flag if the logo is successfully loaded
-                }
-            }
-            catch (Exception e)
-            {
-                PrintError("Failed to load textures: " + e.Message);
-            }
-
         windowSystem.Draw();
     }
 
@@ -762,6 +739,43 @@ public class Plugin : IDalamudPlugin
         OpenConfig(command, args);
     }
 
+    private void PrintHelp()
+    {
+        string helpStr = "Xiv Voices Commands:\r\n" +
+            "on (Enable Xiv Voices)\r\n" +
+            "off (Disable Xiv Voices)\r\n" +
+            "toggle (Disable/Enable Xiv Voices)\r\n" +
+            "mute (Mute/Unmute Volume)\r\n" +
+            "skip (Skips currently playing dialogue)\r\n" +
+            "volup (Increases volume by 10%)\r\n" +
+            "voldown (Decreases volume by 10%)\r\n" +
+            "settings (Opens the settings window)\r\n" +
+            "dialogue (Opens the dialogue settings tab)\r\n" +
+            "audio (Opens the audio settings tab)\r\n" +
+            "logs (Opens the audio logs tab)\r\n" +
+            "changelog (Opens the changelog tab)";
+
+        if (Dalamud.Utility.Util.IsWine())
+        {
+            helpStr += "\r\nwine (Opens the wine settings tab)";
+        }
+
+        Chat.Print(helpStr);
+    }
+
+    private void OpenConfigTab(string tab)
+    {
+        if (_window.currentTab == tab && _window.IsOpen)
+        {
+            _window.IsOpen = false;
+        }
+        else
+        {
+            _window.currentTab = tab;
+            _window.IsOpen = true;
+        }
+    }
+
     public void OpenConfig(string command, string args)
     {
         if (!disposed)
@@ -770,43 +784,41 @@ public class Plugin : IDalamudPlugin
             if (splitArgs.Length > 0)
                 switch (splitArgs[0].ToLower())
                 {
+                    case "":
+                        _window.Toggle();
+                        break;
                     case "help":
-                        Chat.Print("Xiv Voices Commands:\r\n" +
-                                   "on (Enable Xiv Voices)\r\n" +
-                                   "off (Disable Xiv Voices)\r\n" +
-                                   "mute (Mute/Unmute Volume)\r\n" +
-                                   "skip (Skips currently playing dialogue)\r\n" +
-                                   "volup (Increases volume by 10%)\r\n" +
-                                   "voldown (Decreases volume by 10%)");
+                        PrintHelp();
                         break;
                     case "on":
                         Config.Active = true;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = true;
+                        Config.Save();
+                        Chat.Print($"[XIVV] On");
                         break;
                     case "off":
                         Config.Active = false;
-                        _window.Configuration = Config;
-                        Interface.SavePluginConfig(Config);
-                        Config.Active = false;
+                        Config.Save();
+                        Chat.Print($"[XIVV] Off");
+                        break;
+                    case "toggle":
+                        Config.Active = !Config.Active;
+                        Config.Save();
+                        var text = Config.Active ? "On" : "Off";
+                        Chat.Print($"[XIVV] {text}");
                         break;
                     case "mute":
                         if (!Config.Mute)
                         {
                             Config.Mute = true;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = true;
+                            Config.Save();
+                            Chat.Print("[XIVV] Muted");
                         }
                         else
                         {
                             Config.Mute = false;
-                            _window.Configuration = Config;
-                            Interface.SavePluginConfig(Config);
-                            Config.Mute = false;
+                            Config.Save();
+                            Chat.Print("[XIVV] Unmuted");
                         }
-
                         break;
                     case "skip":
                         audio.StopAudio();
@@ -814,17 +826,38 @@ public class Plugin : IDalamudPlugin
                     case "volup":
                         Config.Volume = Math.Clamp(Config.Volume + 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume + 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
                     case "voldown":
                         Config.Volume = Math.Clamp(Config.Volume - 10, 0, 100);
                         Config.LocalTTSVolume = Math.Clamp(Config.LocalTTSVolume - 10, 0, 100);
-                        Interface.SavePluginConfig(Config);
+                        Config.Save();
                         break;
-                    default:
+                    case "settings":
                         _window.Toggle();
                         break;
-                }
+                    case "dialogue":
+                        OpenConfigTab("Dialogue Settings");
+                        break;
+                    case "audio":
+                        OpenConfigTab("Audio Settings");
+                        break;
+                    case "logs":
+                        OpenConfigTab("Audio Logs");
+                        break;
+                    case "changelog":
+                        OpenConfigTab("Changelog");
+                        break;
+                    case "wine":
+                        if (Dalamud.Utility.Util.IsWine())
+                        {
+                            OpenConfigTab("Wine Settings");
+                        }
+                        break;
+                    default:
+                        PrintHelp();
+                        break;
+            }
         }
     }
 
@@ -874,6 +907,7 @@ public class Plugin : IDalamudPlugin
             audio?.Dispose();
             xivEngine?.Dispose();
             _window.Dispose();
+            FFmpegger?.Dispose();
         }
         catch (Exception e)
         {

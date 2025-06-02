@@ -36,8 +36,8 @@ namespace XivVoices.Voice {
         }
         public static unsafe AddonTalkText ReadTalkAddon(AddonBattleTalk* talkAddon) {
             return new AddonTalkText {
-                Speaker = ReadTextNode(talkAddon->AtkTextNode220),
-                Text = ReadTextNode(talkAddon->AtkTextNode228),
+                Speaker = ReadTextNode(talkAddon->Speaker),
+                Text = ReadTextNode(talkAddon->Text),
             };
         }
 
@@ -51,7 +51,7 @@ namespace XivVoices.Voice {
                 if (textLength is <= 0 or > int.MaxValue) return "";
 
                 var textBytes = new byte[textLength];
-                Marshal.Copy((nint)textPtr, textBytes, 0, (int)textLength);
+                Marshal.Copy((nint)textPtr.Value, textBytes, 0, (int)textLength);
                 var seString = SeString.Parse(textBytes);
                 return seString.TextValue
                     .Trim()

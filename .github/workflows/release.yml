@@ -3,7 +3,7 @@ on:
     inputs: {}
   push:
     tags:
-      - '*'
+      - "*"
 
 name: Release
 
@@ -19,7 +19,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.x.x'
+          dotnet-version: "9.0.x"
 
       - name: Download Dalamud
         run: |
@@ -50,15 +50,15 @@ jobs:
       - name: Write version into manifest
         run: |
           $ver = '${{ github.ref }}' -replace 'refs/tags/',''
-          $path = './XivVoices/bin/Release/net8.0-windows/XivVoices.json'
+          $path = './XivVoices/bin/Release/XivVoices.json'
           $content = get-content -path $path
           $content = $content -replace '0.0.0.0',$ver
           set-content -Path $path -Value $content
 
       - name: Packing Release
         run: |
-          pushd XivVoices/bin/Release/net8.0-windows
-          7z a ../XivVoices.zip *
+          pushd XivVoices/bin/Release
+          7z a ./XivVoices.zip *
           popd
         shell: bash
 
