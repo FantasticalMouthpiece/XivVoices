@@ -86,6 +86,7 @@ namespace XivVoices.Engine
                 Active = true;
                 this.Database.Plugin.Chat.Print("Engine: I am awake");
                 Plugin.PluginLog.Information($"Version[{currentVersion}]");
+                _ = TryUploadLocalReports();
             }
             catch (Exception ex)
             {
@@ -2016,6 +2017,10 @@ namespace XivVoices.Engine
                     xivMessage.Sentence = xivMessage.Sentence.Replace(fullname[1], "_LASTNAME_");
                 }
                 string url = $"?user={xivMessage.TtsData.User}&speaker={xivMessage.Speaker}&sentence={xivMessage.Sentence}&npcid={xivMessage.NpcId}&skeletonid={xivMessage.TtsData.SkeletonID}&body={xivMessage.TtsData.Body}&gender={xivMessage.TtsData.Gender}&race={xivMessage.TtsData.Race}&tribe={xivMessage.TtsData.Tribe}&eyes={xivMessage.TtsData.Eyes}&folder={folder}&comment={comment}";
+                string fileName;
+                string speaker = xivMessage.Speaker;
+                fileName = Database.CleanedSentenceAndSpeakerForFile(string.Empty, ref speaker, xivMessage.Sentence);
+                fileName = Path.Combine(this.Database.ReportsPath, $"{speaker}_{fileName}.txt");
                 if (!reportedLines.Contains(url))
                 {
                     reportedLines.Enqueue(url);
@@ -2023,23 +2028,17 @@ namespace XivVoices.Engine
                         reportedLines.Dequeue();
 
                     if (Plugin.Config.AnnounceReports) this.Database.Plugin.Print($"Reporting line: \"{xivMessage.Sentence}\"");
-                    /*
+                    
                     try
                     {
-                        HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url);
+                        HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url + $"&filename={Path.GetFileName(fileName)}");
                         response.EnsureSuccessStatusCode();
                         string responseBody = await response.Content.ReadAsStringAsync();
                     }
-                    catch (HttpRequestException e)*/
+                    catch (HttpRequestException e)
                     {
                         Plugin.PluginLog.Info("Report failed, saving it to the Reports folder to be automatically sent later.");
                         Directory.CreateDirectory(this.Database.ReportsPath);
-                        string fileName;
-
-                        string speaker = xivMessage.Speaker;
-                        fileName = Database.CleanedSentenceAndSpeakerForFile(string.Empty, ref speaker, xivMessage.Sentence);
-
-                        fileName = Path.Combine(this.Database.ReportsPath, $"{speaker}_{fileName}.txt");
 
                         if(!Path.Exists(fileName))
                             await File.WriteAllTextAsync(fileName, url);
@@ -2053,6 +2052,21 @@ namespace XivVoices.Engine
             }
 
         }
+        
+        public Task TryUploadLocalReports()
+        {
+            Plugin.PluginLog.Debug("Trying to upload local reports");
+            return Task.Run(async () =>
+            {
+              if (Directory.Exists(this.Database.ReportsPath))
+              {
+                foreach (string file in Directory.EnumerateFiles(Database.ReportsPath))
+                {
+                  await ProcessReportFileAsync(file);
+                }
+              }
+            });
+        }
 
         // This function sends reports when the user has failed to
         // send them previously due to my server being offline
@@ -2062,22 +2076,22 @@ namespace XivVoices.Engine
             {
                 if (!File.Exists(filePath)) return; // Ensure file still exists
                 string url = await File.ReadAllTextAsync(filePath);
-                if (!Plugin.Config.Reports) return;
+                // if (!Plugin.Config.Reports) return; // nuh uh
                 try
                 {
-                    HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url);
+                    HttpResponseMessage response = await client.GetAsync(this.Database.GetReportSource() + url + $"&filename={Path.GetFileName(filePath)}");
                     response.EnsureSuccessStatusCode();
                     string responseBody = await response.Content.ReadAsStringAsync();
                     DeleteFileWithRetry(filePath);
                 }
                 catch (HttpRequestException e)
                 {
-                    XivEngine.Instance.Database.Plugin.PrintError($"HTTP request failed for file {filePath}: {e.Message}");
+                    Plugin.PluginLog.Debug($"HTTP request failed for file {filePath}: {e.Message}");
                 }
             }
             catch (Exception ex)
             {
-                XivEngine.Instance.Database.Plugin.PrintError($"Failed to process report file {filePath}: {ex.Message}");
+                Plugin.PluginLog.Debug($"Failed to process report file {filePath}: {ex.Message}");
             }
         }
         private void DeleteFileWithRetry(string path)

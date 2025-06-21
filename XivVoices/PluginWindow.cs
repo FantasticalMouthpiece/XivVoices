@@ -1137,6 +1137,12 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
 
+                if (ImGui.CollapsingHeader("Version 0.3.5.2", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Added report uploading.");
+                }
+
                 if (ImGui.CollapsingHeader("Version 0.3.5.1", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet();

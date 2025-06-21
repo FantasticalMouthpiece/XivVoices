@@ -1159,7 +1159,7 @@ namespace XivVoices.Engine
         #region Access
 
         public string GetDataSource() => "http://?/access.php";
-        public string GetReportSource() => "http://?/report.php";
+        public string GetReportSource() => "https://xivv.keifufu.dev/legacyreport";
         private readonly HttpClient client = new HttpClient();
 
         public async Task GetRequest(XivMessage xivMessage)
