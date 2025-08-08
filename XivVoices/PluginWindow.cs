@@ -1137,6 +1137,12 @@ public class PluginWindow : Window, IDisposable
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
 
+                if (ImGui.CollapsingHeader("Version 0.3.5.3", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Updated for 7.3hf1");
+                }
+
                 if (ImGui.CollapsingHeader("Version 0.3.5.2", ImGuiTreeNodeFlags.None))
                 {
                     ImGui.Bullet();
