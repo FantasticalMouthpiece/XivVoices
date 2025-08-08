@@ -11,7 +11,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XivVoices.Engine;
 
 namespace XivVoices;
@@ -41,11 +41,11 @@ public class PluginWindow : Window, IDisposable
     {
     }
 
-    private IntPtr GetImGuiHandleForIconId(uint iconId)
+    private ImTextureID GetImGuiHandleForIconId(uint iconId)
     {
         if (Plugin.TextureProvider.TryGetFromGameIcon(new GameIconLookup(iconId), out var icon))
         {
-            return icon.GetWrapOrEmpty().ImGuiHandle;
+            return icon.GetWrapOrEmpty().Handle;
         }
 
         return 0;
@@ -123,7 +123,7 @@ public class PluginWindow : Window, IDisposable
               if (discord == null) return;
               using (ImRaii.PushColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0)))
               {
-                  if (ImGui.ImageButton(discord.ImGuiHandle, new Vector2(42 * ImGuiHelpers.GlobalScale, 42 * ImGuiHelpers.GlobalScale)))
+                  if (ImGui.ImageButton(discord.Handle, new Vector2(42 * ImGuiHelpers.GlobalScale, 42 * ImGuiHelpers.GlobalScale)))
                   {
                       var process = new Process();
                       try
@@ -172,7 +172,7 @@ public class PluginWindow : Window, IDisposable
       }
     }
 
-    private void DrawImageButton(string tabName, bool active, IntPtr imageHandle)
+    private void DrawImageButton(string tabName, bool active, ImTextureID imageHandle)
     {
         var style = ImGui.GetStyle();
         if (active)
@@ -196,7 +196,7 @@ public class PluginWindow : Window, IDisposable
         }
     }
 
-    private void DrawSidebarButton(string tabName, IntPtr imageHandle)
+    private void DrawSidebarButton(string tabName, ImTextureID imageHandle)
     {
         DrawImageButton(tabName, currentTab == tabName, imageHandle);
     }
@@ -218,7 +218,7 @@ public class PluginWindow : Window, IDisposable
         // dalamud has this cached internally, just get it every frame duh
         var logo = Plugin.TextureProvider.GetFromFile(Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "logo.png")).GetWrapOrDefault();
         if (logo == null) return;
-        ImGui.Image(logo.ImGuiHandle, new Vector2(200, 200));
+        ImGui.Image(logo.Handle, new Vector2(200, 200));
 
         ImGui.TextWrapped("Working Directory is " + Plugin.Config.WorkingDirectory);
         ImGui.Dummy(new Vector2(0, 10));
@@ -346,7 +346,7 @@ public class PluginWindow : Window, IDisposable
                 // dalamud has this cached internally, just get it every frame duh
                 var logo = Plugin.TextureProvider.GetFromFile(Path.Combine(Plugin.Interface.AssemblyLocation.Directory?.FullName!, "logo.png")).GetWrapOrDefault();
                 if (logo == null) return;
-                ImGui.Image(logo.ImGuiHandle, new Vector2(200 * ImGuiHelpers.GlobalScale, 200 * ImGuiHelpers.GlobalScale));
+                ImGui.Image(logo.Handle, new Vector2(200 * ImGuiHelpers.GlobalScale, 200 * ImGuiHelpers.GlobalScale));
 
                 // Working Directory
                 ImGui.TextWrapped("Working Directory is " + Plugin.Config.WorkingDirectory);
@@ -1136,6 +1136,12 @@ public class PluginWindow : Window, IDisposable
             {
                 ImGui.Columns(2, "ChangelogColumns", false);
                 ImGui.SetColumnWidth(0, 350 * ImGuiHelpers.GlobalScale);
+
+                if (ImGui.CollapsingHeader("Version 0.3.5.3", ImGuiTreeNodeFlags.None))
+                {
+                    ImGui.Bullet();
+                    ImGui.TextWrapped("Updated for 7.3hf1");
+                }
 
                 if (ImGui.CollapsingHeader("Version 0.3.5.2", ImGuiTreeNodeFlags.None))
                 {

@@ -14,14 +14,14 @@ public static class Lipsync {
   [StructLayout(LayoutKind.Explicit)]
   public unsafe struct ActorMemory
   {
-    [FieldOffset(0x09B0)] public AnimationMemory Animation;
-    [FieldOffset(0x22CC)] public byte CharacterMode;
+    [FieldOffset(0x0A20)] public AnimationMemory Animation;
+    [FieldOffset(0x2354)] public byte CharacterMode;
   }
 
   [StructLayout(LayoutKind.Explicit)]
   public unsafe struct AnimationMemory
   {
-      [FieldOffset(0x2D8)] public ushort LipsOverride;
+      [FieldOffset(0x2E8)] public ushort LipsOverride;
   }
 
   public static unsafe void SetLipsOverride(IntPtr characterAddress, ushort newLipsOverride)
