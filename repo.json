@@ -8,7 +8,7 @@
     "TestingAssemblyVersion": "0.3.5.3",
     "RepoUrl": "https://github.com/FantasticalMouthpiece/XivVoices",
     "ApplicableVersion": "any",
-    "DalamudApiLevel": 12,
+    "DalamudApiLevel": 13,
     "IsHide": "False",
     "IsTestingExclusive": "False",
     "DownloadCount": 0,
