@@ -1,0 +1,30 @@
+[
+  {
+    "Author": "keifufu",
+    "Name": "XivVoices",
+    "Punchline": "Turning every dialogue into a voiced dialogue!",
+    "Description": "A plugin that enhances your gaming experience by adding voice to every NPC dialogue, battle interaction, and more. /xivv",
+    "Tags": [
+      "XivVoices",
+      "XIVV"
+    ],
+    "IsHide": false,
+    "InternalName": "XivVoices",
+    "AssemblyVersion": "1.0.0.0",
+    "TestingAssemblyVersion": null,
+    "IsTestingExclusive": false,
+    "RepoUrl": "https://github.com/keifufu/XivVoices",
+    "ApplicableVersion": "any",
+    "DalamudApiLevel": 13,
+    "TestingDalamudApiLevel": 0,
+    "DownloadCount": 0,
+    "LastUpdate": 1757788068,
+    "DownloadLinkInstall": "https://github.com/keifufu/XivVoices/releases/download/1.0.0.0/XivVoices.zip",
+    "DownloadLinkUpdate": "https://github.com/keifufu/XivVoices/releases/download/1.0.0.0/XivVoices.zip",
+    "DownloadLinkTesting": "https://github.com/keifufu/XivVoices/releases/download/1.0.0.0/XivVoices.zip",
+    "LoadRequiredState": 2,
+    "LoadSync": true,
+    "LoadPriority": 0,
+    "IconUrl": "https://raw.githubusercontent.com/keifufu/XivVoices/main/data/logo.png"
+  }
+]
