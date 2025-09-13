@@ -1,0 +1,38 @@
+name: mirror repo.json
+
+on:
+  schedule:
+    - cron: "20 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download repo.json
+        run: |
+          response=$(curl -s -o repo.json -w "%{http_code}" -L https://xivv.keifufu.dev/repo)
+          if [ "$response" -ne 200 ]; then
+            echo "Failed to download repo.json: HTTP status $response"
+            exit 1
+          fi
+
+      - name: Commit repo.json
+        run: |
+          git config user.name "Github Actions"
+          git config user.email "actions@github.com"
+          git add repo.json
+          if ! git diff --cached --quiet; then
+            git commit -m "[CI] Update repo.json"
+            git push origin main
+          fi
