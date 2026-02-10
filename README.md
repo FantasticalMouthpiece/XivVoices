@@ -1,7 +1,11 @@
-# Xiv Voices (archive)
+# IMPORTANT
 
-This now serves a mirror repo.json of the [new plugin](https://xivv.keifufu.dev/repo/github)
+This repository is abandoned. If you keep linking here, stop.
 
-Please submit any new issues or PR's to the [new plugin](https://xivv.keifufu.dev/repo/github).
+If you still use the old dalamud repository link, replace it with the new one and reinstall the plugin, your plugin data and configuration will be kept:
 
-See archived plugin on the [archive branch](https://github.com/FantasticalMouthpiece/XivVoices/tree/archive).
+```
+https://xivv.keifufu.dev/repo
+```
+
+The new GitHub is at [keifufu/XivVoices](https://xivv.keifufu.dev/github)
