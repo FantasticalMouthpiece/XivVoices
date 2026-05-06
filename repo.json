@@ -5,26 +5,26 @@
     "Punchline": "Transforming Final Fantasy XIV by voicing every piece of dialogue!",
     "Description": "A plugin that voices every NPC dialogue, battle interaction, and more.",
     "Tags": [
-      "XivVoices",
-      "XIVV"
+      "xivvoices",
+      "xivv"
     ],
     "IsHide": false,
     "InternalName": "XivVoices",
-    "AssemblyVersion": "1.3.1.2",
+    "AssemblyVersion": "1.4.0.1",
     "TestingAssemblyVersion": null,
     "IsTestingExclusive": false,
     "RepoUrl": "https://github.com/keifufu/XivVoices",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
     "TestingDalamudApiLevel": 0,
-    "DownloadCount": 8631,
-    "LastUpdate": 1777572141,
-    "DownloadLinkInstall": "https://github.com/keifufu/XivVoices/releases/download/1.3.1.2/XivVoices.zip",
-    "DownloadLinkUpdate": "https://github.com/keifufu/XivVoices/releases/download/1.3.1.2/XivVoices.zip",
-    "DownloadLinkTesting": "https://github.com/keifufu/XivVoices/releases/download/1.3.1.2/XivVoices.zip",
+    "DownloadCount": 9187,
+    "LastUpdate": 1778027896,
+    "DownloadLinkInstall": "https://github.com/keifufu/XivVoices/releases/download/1.4.0.1/XivVoices.zip",
+    "DownloadLinkUpdate": "https://github.com/keifufu/XivVoices/releases/download/1.4.0.1/XivVoices.zip",
+    "DownloadLinkTesting": "https://github.com/keifufu/XivVoices/releases/download/1.4.0.1/XivVoices.zip",
     "LoadRequiredState": 2,
     "LoadSync": true,
     "LoadPriority": 0,
-    "IconUrl": "https://raw.githubusercontent.com/keifufu/XivVoices/main/data/logo.png"
+    "IconUrl": "https://raw.githubusercontent.com/keifufu/XivVoices/main/XivVoices/assets/logo.png"
   }
 ]
